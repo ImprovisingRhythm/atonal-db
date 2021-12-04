@@ -1,13 +1,13 @@
 import { Redis } from 'ioredis'
-import { NativeType, RedisModel, TypeLabel } from '../db/redis'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
-export interface AtonalListOptions<T extends TypeLabel> {
+export interface AtonalListOptions<T extends RedisValueType> {
   name: string
   type: T
-  defaultValues?: NativeType<T>[]
+  defaultValues?: RedisValueNativeType<T>[]
 }
 
-export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
+export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
   constructor(private opts: AtonalListOptions<T>) {
     super(opts.name, opts.type)
   }
@@ -30,7 +30,7 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
     return this.parse(value)
   }
 
-  async indexOf(value: NativeType<T>) {
+  async indexOf(value: RedisValueNativeType<T>) {
     const index = await this.getClient().lpos(this.key, this.stringify(value))
 
     if (index === null) {
@@ -60,7 +60,7 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async push(...values: NativeType<T>[]) {
+  async push(...values: RedisValueNativeType<T>[]) {
     return this.getClient().rpush(this.key, ...this.stringifyMany(values))
   }
 
@@ -68,7 +68,7 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
     return this.getClient().rpop(this.key)
   }
 
-  async unshift(...values: NativeType<T>[]) {
+  async unshift(...values: RedisValueNativeType<T>[]) {
     return this.getClient().lpush(this.key, ...this.stringifyMany(values))
   }
 
@@ -78,11 +78,11 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
     return this.parse(value)
   }
 
-  async removeFirst(value: NativeType<T>) {
+  async removeFirst(value: RedisValueNativeType<T>) {
     await this.getClient().lrem(this.key, 1, this.stringify(value))
   }
 
-  async removeAll(value: NativeType<T>) {
+  async removeAll(value: RedisValueNativeType<T>) {
     await this.getClient().lrem(this.key, 0, this.stringify(value))
   }
 
@@ -91,5 +91,5 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
   }
 }
 
-export const useList = <T extends TypeLabel>(opts: AtonalListOptions<T>) =>
+export const useList = <T extends RedisValueType>(opts: AtonalListOptions<T>) =>
   new AtonalList(opts)

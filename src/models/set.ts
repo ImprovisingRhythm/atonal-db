@@ -1,13 +1,13 @@
 import { Redis } from 'ioredis'
-import { NativeType, RedisModel, TypeLabel } from '../db/redis'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
-export interface AtonalSetOptions<T extends TypeLabel> {
+export interface AtonalSetOptions<T extends RedisValueType> {
   name: string
   type: T
-  defaultValues?: NativeType<T>[]
+  defaultValues?: RedisValueNativeType<T>[]
 }
 
-export class AtonalSet<T extends TypeLabel> extends RedisModel<T> {
+export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   constructor(private opts: AtonalSetOptions<T>) {
     super(opts.name, opts.type)
   }
@@ -24,15 +24,15 @@ export class AtonalSet<T extends TypeLabel> extends RedisModel<T> {
     }
   }
 
-  async add(...values: NativeType<T>[]) {
+  async add(...values: RedisValueNativeType<T>[]) {
     return this.getClient().sadd(this.key, ...this.stringifyMany(values))
   }
 
-  async remove(value: NativeType<T>) {
+  async remove(value: RedisValueNativeType<T>) {
     await this.getClient().srem(this.key, this.stringify(value))
   }
 
-  async has(value: NativeType<T>) {
+  async has(value: RedisValueNativeType<T>) {
     const res = await this.getClient().sismember(
       this.key,
       this.stringify(value),
@@ -56,5 +56,5 @@ export class AtonalSet<T extends TypeLabel> extends RedisModel<T> {
   }
 }
 
-export const useSet = <T extends TypeLabel>(opts: AtonalSetOptions<T>) =>
+export const useSet = <T extends RedisValueType>(opts: AtonalSetOptions<T>) =>
   new AtonalSet(opts)

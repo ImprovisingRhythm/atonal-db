@@ -1,13 +1,13 @@
 import IORedis, { Redis } from 'ioredis'
 
-export type TypeLabel = 'string' | 'number' | 'record'
-export type NativeType<T extends TypeLabel> = T extends 'string'
+export type RedisValueType = 'string' | 'number' | 'record'
+export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
   ? string
   : T extends 'number'
   ? number
   : Record<string, any>
 
-export class RedisModel<T extends TypeLabel = 'string'> {
+export class RedisModel<T extends RedisValueType = 'string'> {
   private client?: Redis
 
   constructor(private name: string, private type: T) {}
@@ -32,7 +32,7 @@ export class RedisModel<T extends TypeLabel = 'string'> {
     return this.client
   }
 
-  protected stringify(value: NativeType<T>) {
+  protected stringify(value: RedisValueNativeType<T>) {
     if (this.type === 'string' || this.type === 'number') {
       return String(value)
     }
@@ -40,7 +40,7 @@ export class RedisModel<T extends TypeLabel = 'string'> {
     return JSON.stringify(value)
   }
 
-  protected stringifyMany(values: NativeType<T>[]) {
+  protected stringifyMany(values: RedisValueNativeType<T>[]) {
     if (this.type === 'string' || this.type === 'number') {
       return values.map(value => String(value))
     }
@@ -50,26 +50,26 @@ export class RedisModel<T extends TypeLabel = 'string'> {
 
   protected parse(value: string) {
     if (this.type === 'number') {
-      return Number(value) as NativeType<T>
+      return Number(value) as RedisValueNativeType<T>
     }
 
     if (this.type === 'record') {
-      return JSON.parse(value) as NativeType<T>
+      return JSON.parse(value) as RedisValueNativeType<T>
     }
 
-    return value as NativeType<T>
+    return value as RedisValueNativeType<T>
   }
 
   protected parseMany(values: string[]) {
     if (this.type === 'number') {
-      return values.map(value => Number(value)) as NativeType<T>[]
+      return values.map(value => Number(value)) as RedisValueNativeType<T>[]
     }
 
     if (this.type === 'record') {
-      return values.map(value => JSON.parse(value)) as NativeType<T>[]
+      return values.map(value => JSON.parse(value)) as RedisValueNativeType<T>[]
     }
 
-    return values as NativeType<T>[]
+    return values as RedisValueNativeType<T>[]
   }
 }
 

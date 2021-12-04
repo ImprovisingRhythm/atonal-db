@@ -29,23 +29,36 @@ export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {
     redisClient = await useRedis(databases.redis)
   }
 
+  const getMongoClient = () => {
+    if (!mongoClient) {
+      throw new Error('MongoClient is not initialized')
+    }
+
+    return mongoClient
+  }
+
+  const getRedisClient = () => {
+    if (!redisClient) {
+      throw new Error('RedisClient is not initialized')
+    }
+
+    return redisClient
+  }
+
   for (const model of models) {
     if (model instanceof MongoModel) {
-      if (!mongoClient) {
-        throw new Error('require mongodb config')
-      }
-
       // @ts-ignore
-      model._init(mongoClient)
+      model._init(getMongoClient())
     } else if (model instanceof RedisModel) {
-      if (!redisClient) {
-        throw new Error('require redis config')
-      }
-
       // @ts-ignore
-      model._init(redisClient)
+      model._init(getRedisClient())
     } else {
       throw new Error('unrecognized model type')
     }
+  }
+
+  return {
+    getMongoClient,
+    getRedisClient,
   }
 }

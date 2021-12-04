@@ -1,5 +1,7 @@
 import { MongoClient } from 'mongodb'
 
+export { ObjectId } from 'mongodb'
+
 export class MongoModel {
   private client?: MongoClient
 

@@ -1,13 +1,13 @@
 import { Redis } from 'ioredis'
-import { NativeType, RedisModel, TypeLabel } from '../db/redis'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
-export interface AtonalValueOptions<T extends TypeLabel> {
+export interface AtonalValueOptions<T extends RedisValueType> {
   name: string
   type: T
-  defaultValue?: NativeType<T>
+  defaultValue?: RedisValueNativeType<T>
 }
 
-export class AtonalValue<T extends TypeLabel> extends RedisModel<T> {
+export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   constructor(private opts: AtonalValueOptions<T>) {
     super(opts.name, opts.type)
   }
@@ -24,7 +24,7 @@ export class AtonalValue<T extends TypeLabel> extends RedisModel<T> {
     }
   }
 
-  async set(value: NativeType<T>) {
+  async set(value: RedisValueNativeType<T>) {
     return this.getClient().set(this.key, this.stringify(value))
   }
 
@@ -43,5 +43,6 @@ export class AtonalValue<T extends TypeLabel> extends RedisModel<T> {
   }
 }
 
-export const useValue = <T extends TypeLabel>(opts: AtonalValueOptions<T>) =>
-  new AtonalValue(opts)
+export const useValue = <T extends RedisValueType>(
+  opts: AtonalValueOptions<T>,
+) => new AtonalValue(opts)
