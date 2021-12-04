@@ -6,8 +6,11 @@ import { RedisConfig, RedisModel, useRedis } from './db/redis'
 export * from './db/mongo'
 export * from './db/redis'
 export * from './models/collection'
+export * from './models/kv'
 export * from './models/list'
+export * from './models/map'
 export * from './models/set'
+export * from './models/value'
 
 export interface AtonalDBConfig {
   databases: {

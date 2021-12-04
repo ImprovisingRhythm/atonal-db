@@ -29,7 +29,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async remove(value: RedisValueNativeType<T>) {
-    await this.getClient().srem(this.key, this.stringify(value))
+    return this.getClient().srem(this.key, this.stringify(value))
   }
 
   async has(value: RedisValueNativeType<T>) {
@@ -52,7 +52,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async clear() {
-    await this.getClient().del(this.key)
+    return this.getClient().del(this.key)
   }
 }
 

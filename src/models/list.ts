@@ -79,15 +79,15 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async removeFirst(value: RedisValueNativeType<T>) {
-    await this.getClient().lrem(this.key, 1, this.stringify(value))
+    return this.getClient().lrem(this.key, 1, this.stringify(value))
   }
 
   async removeAll(value: RedisValueNativeType<T>) {
-    await this.getClient().lrem(this.key, 0, this.stringify(value))
+    return this.getClient().lrem(this.key, 0, this.stringify(value))
   }
 
   async clear() {
-    await this.getClient().del(this.key)
+    return this.getClient().del(this.key)
   }
 }
 

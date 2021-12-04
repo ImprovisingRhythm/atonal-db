@@ -1,5 +1,10 @@
 import { Redis } from 'ioredis'
-import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
+import {
+  RedisValueNativeType,
+  RedisModel,
+  RedisValueType,
+  getRedisTime,
+} from '../db/redis'
 
 export interface AtonalValueOptions<T extends RedisValueType> {
   name: string
@@ -24,8 +29,19 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async set(value: RedisValueNativeType<T>) {
-    return this.getClient().set(this.key, this.stringify(value))
+  async set(value: RedisValueNativeType<T>, expiresIn?: string | number) {
+    const client = this.getClient()
+
+    if (expiresIn) {
+      return client.set(
+        this.key,
+        this.stringify(value),
+        'EX',
+        getRedisTime(expiresIn),
+      )
+    } else {
+      return client.set(this.key, this.stringify(value))
+    }
   }
 
   async get() {
@@ -39,7 +55,15 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async delete() {
-    await this.getClient().del(this.key)
+    return this.getClient().del(this.key)
+  }
+
+  async expire(expiresIn: string | number) {
+    return this.getClient().expire(this.key, getRedisTime(expiresIn))
+  }
+
+  async ttl() {
+    return this.getClient().ttl(this.key)
   }
 }
 

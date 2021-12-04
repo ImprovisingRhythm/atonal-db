@@ -1,4 +1,13 @@
 import IORedis, { Redis } from 'ioredis'
+import ms from 'ms'
+
+export const getRedisTime = (time: string | number) => {
+  if (typeof time === 'string') {
+    return ms(time) / 1000
+  }
+
+  return time
+}
 
 export type RedisValueType = 'string' | 'number' | 'record'
 export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
@@ -78,23 +87,15 @@ export interface RedisConfig {
   host: string
   password?: string
   db?: number
-  keyPrefix?: string
 }
 
-export const useRedis = ({
-  port,
-  host,
-  password,
-  db,
-  keyPrefix,
-}: RedisConfig) => {
+export const useRedis = ({ port, host, password, db }: RedisConfig) => {
   return new Promise<Redis>(resolve => {
     const client = new IORedis({
       port,
       host,
       password,
       db,
-      keyPrefix,
       dropBufferSupport: true,
       enableAutoPipelining: true,
       noDelay: false,
