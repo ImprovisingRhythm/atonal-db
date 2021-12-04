@@ -92,7 +92,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     super()
   }
 
-  async _init(client: MongoClient) {
+  protected async _init(client: MongoClient) {
     super._init(client)
 
     if (this.opts.sync) {

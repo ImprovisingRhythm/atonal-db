@@ -12,7 +12,7 @@ export class AtonalList<T extends TypeLabel> extends RedisModel<T> {
     super(opts.name, opts.type)
   }
 
-  async _init(client: Redis) {
+  protected async _init(client: Redis) {
     super._init(client)
 
     if (this.opts.defaultValues) {
