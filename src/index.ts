@@ -17,7 +17,7 @@ export interface AtonalDBConfig {
     mongodb?: MongoConfig
     redis?: RedisConfig
   }
-  models?: Array<MongoModel | RedisModel>
+  models?: Array<MongoModel | RedisModel<any>>
 }
 
 export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {

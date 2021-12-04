@@ -16,7 +16,7 @@ export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
   ? number
   : Record<string, any>
 
-export class RedisModel<T extends RedisValueType = 'string'> {
+export class RedisModel<T extends RedisValueType> {
   private client?: Redis
 
   constructor(private name: string, private type: T) {}
