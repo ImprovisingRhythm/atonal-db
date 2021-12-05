@@ -51,6 +51,33 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     return this.getClient().scard(this.key)
   }
 
+  async intersection(...items: AtonalSet<T>[]) {
+    const values: string[] = await this.getClient().sinter(
+      this.key,
+      ...items.map(item => item.key),
+    )
+
+    return this.parseMany(values)
+  }
+
+  async difference(...items: AtonalSet<T>[]) {
+    const values: string[] = await this.getClient().sdiff(
+      this.key,
+      ...items.map(item => item.key),
+    )
+
+    return this.parseMany(values)
+  }
+
+  async union(...items: AtonalSet<T>[]) {
+    const values: string[] = await this.getClient().sunion(
+      this.key,
+      ...items.map(item => item.key),
+    )
+
+    return this.parseMany(values)
+  }
+
   async clear() {
     return this.getClient().del(this.key)
   }
