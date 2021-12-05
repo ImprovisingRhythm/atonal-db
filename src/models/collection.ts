@@ -40,7 +40,6 @@ export type Ref<Model extends BaseModel> = Model | ObjectId
 
 export interface BaseModel {
   _id: ObjectId
-  [key: string]: unknown
 }
 
 export interface Timestamps {
@@ -276,10 +275,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     return this.collection.estimatedDocumentCount(opts)
   }
 
-  async populate(
-    docs: Model[],
-    items: ArrayOr<PopulateItem<Model, BaseModel>>,
-  ) {
+  async populate(docs: Model[], items: ArrayOr<PopulateItem<Model, any>>) {
     if (isEmpty(docs)) {
       return docs
     }
@@ -309,7 +305,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
 
     // If "select" is not empty, transform it into a projection
     if (isNotEmpty(select)) {
-      const projection: Projection<BaseModel> = {}
+      const projection: Projection<any> = {}
 
       for (const item of select) {
         projection[item] = 1
