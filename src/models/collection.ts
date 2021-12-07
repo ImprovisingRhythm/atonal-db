@@ -87,7 +87,7 @@ export interface AtonalCollectionOptions<Model extends BaseModel> {
 }
 
 export class AtonalCollection<Model extends BaseModel> extends MongoModel {
-  constructor(private opts: AtonalCollectionOptions<Model>) {
+  constructor(private readonly opts: AtonalCollectionOptions<Model>) {
     super()
   }
 
@@ -149,15 +149,15 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     return docs as unknown as Model[]
   }
 
-  find(filter: Filter<Model> = {}, opts: FindOptions = {}) {
+  find(filter: Filter<Model> = {}, opts: FindOptions<Model> = {}) {
     return this.collection.find(filter, opts)
   }
 
-  async findOne(filter: Filter<Model>, opts: FindOptions = {}) {
+  async findOne(filter: Filter<Model>, opts: FindOptions<Model> = {}) {
     return this.collection.findOne(filter, opts)
   }
 
-  async findById(_id: ObjectId, opts: FindOptions = {}) {
+  async findById(_id: ObjectId, opts: FindOptions<Model> = {}) {
     return this.findOne({ _id }, opts)
   }
 

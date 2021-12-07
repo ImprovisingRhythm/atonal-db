@@ -13,7 +13,7 @@ export interface AtonalValueOptions<T extends RedisValueType> {
 }
 
 export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
-  constructor(private opts: AtonalValueOptions<T>) {
+  constructor(private readonly opts: AtonalValueOptions<T>) {
     super(opts.name, opts.type)
   }
 
