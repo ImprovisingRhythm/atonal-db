@@ -1,8 +1,10 @@
 import { Redis } from 'ioredis'
 import { MongoClient } from 'mongodb'
+import { DBModel } from './db/model'
 import { MongoConfig, MongoModel, useMongo } from './db/mongo'
 import { RedisConfig, RedisModel, useRedis } from './db/redis'
 
+export * from './db/model'
 export * from './db/mongo'
 export * from './db/redis'
 export * from './models/collection'
@@ -17,7 +19,7 @@ export interface AtonalDBConfig {
     mongodb?: MongoConfig
     redis?: RedisConfig
   }
-  models?: Array<MongoModel | RedisModel<any>>
+  models?: DBModel[]
 }
 
 export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {
@@ -48,17 +50,21 @@ export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {
     return redisClient
   }
 
-  for (const model of models) {
-    if (model instanceof MongoModel) {
-      // @ts-ignore
-      model._init(getMongoClient())
-    } else if (model instanceof RedisModel) {
-      // @ts-ignore
-      model._init(getRedisClient())
-    } else {
-      throw new Error('unrecognized model type')
+  const initModels = (models: DBModel[]) => {
+    for (const model of models) {
+      if (model instanceof MongoModel) {
+        // @ts-ignore
+        model._init(getMongoClient())
+      } else if (model instanceof RedisModel) {
+        // @ts-ignore
+        model._init(getRedisClient())
+      } else {
+        initModels(Object.values(model))
+      }
     }
   }
+
+  initModels(models)
 
   return {
     getMongoClient,
