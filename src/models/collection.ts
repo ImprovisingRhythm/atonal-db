@@ -190,7 +190,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
-      this.checkAndSetUpdatedAt(update)
+      this.updateTimestamps(update)
     }
 
     return this.collection.updateOne(filter, update, opts)
@@ -210,7 +210,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
-      this.checkAndSetUpdatedAt(update)
+      this.updateTimestamps(update)
     }
 
     return this.collection.updateMany(filter, update, opts)
@@ -225,11 +225,16 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     }: FindOneAndUpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
-      this.checkAndSetUpdatedAt(update)
+      this.updateTimestamps(update)
     }
 
-    const result = await this.collection.findOneAndUpdate(filter, update, opts)
-    return result.value
+    const { value } = await this.collection.findOneAndUpdate(
+      filter,
+      update,
+      opts,
+    )
+
+    return value
   }
 
   async findByIdAndUpdate(
@@ -256,8 +261,9 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     filter: Filter<Model>,
     opts: FindOneAndDeleteOptions = {},
   ) {
-    const result = await this.collection.findOneAndDelete(filter, opts)
-    return result.value
+    const { value } = await this.collection.findOneAndDelete(filter, opts)
+
+    return value
   }
 
   async findByIdAndDelete(_id: ObjectId, opts: FindOneAndDeleteOptions = {}) {
@@ -340,6 +346,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     for (const index of this.opts.indexes) {
       if (Array.isArray(index)) {
         const [indexSpec, options = {}] = index
+
         await this.collection.createIndex(indexSpec, options)
       } else {
         await this.collection.createIndex(index)
@@ -351,7 +358,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     return this.getClient().db().collection<Model>(this.opts.name)
   }
 
-  private checkAndSetUpdatedAt(update: UpdateFilter<Model>) {
+  private updateTimestamps(update: UpdateFilter<Model>) {
     if (update.$set) {
       if (!update.$set.hasOwnProperty('updatedAt')) {
         Object.assign(update.$set, {

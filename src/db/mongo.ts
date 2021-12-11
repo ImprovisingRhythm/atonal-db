@@ -1,26 +1,9 @@
 import { MongoClient } from 'mongodb'
+import { InitableModel } from './model'
 
 export { ObjectId } from 'mongodb'
 
-export class MongoModel {
-  private client?: MongoClient
-
-  protected _init(client: MongoClient) {
-    if (this.client) {
-      throw new Error('already initialized')
-    }
-
-    this.client = client
-  }
-
-  protected getClient() {
-    if (!this.client) {
-      throw new Error('need initialize first')
-    }
-
-    return this.client
-  }
-}
+export class MongoModel extends InitableModel<MongoClient> {}
 
 export interface MongoConfig {
   url: string

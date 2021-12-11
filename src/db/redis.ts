@@ -1,5 +1,6 @@
 import IORedis, { Redis } from 'ioredis'
 import ms from 'ms'
+import { InitableModel } from './model'
 
 export const getRedisTime = (time: string | number) => {
   if (typeof time === 'string') {
@@ -16,29 +17,13 @@ export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
   ? number
   : Record<string, any>
 
-export class RedisModel<T extends RedisValueType> {
-  private client?: Redis
-
-  constructor(private name: string, private type: T) {}
-
-  protected _init(client: Redis) {
-    if (this.client) {
-      throw new Error('already initialized')
-    }
-
-    this.client = client
+export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
+  constructor(private name: string, private type: T) {
+    super()
   }
 
   protected get key() {
     return this.name
-  }
-
-  protected getClient() {
-    if (!this.client) {
-      throw new Error('need initialize first')
-    }
-
-    return this.client
   }
 
   protected stringify(value: RedisValueNativeType<T>) {
