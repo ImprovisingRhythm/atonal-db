@@ -1,6 +1,6 @@
 {
   "name": "atonal-db",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "The database layer for Atonal Framework",
   "main": "dist/index.js",
   "author": "Improvising Rhythm Ltd.",

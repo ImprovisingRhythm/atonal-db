@@ -47,7 +47,7 @@ export interface Timestamps {
   updatedAt: Date
 }
 
-export type NewDocument<T extends BaseModel> = Omit<
+export type NewDocument<T extends OmitRef<BaseModel>> = Omit<
   OptionalId<T>,
   keyof Timestamps
 > &
@@ -101,7 +101,7 @@ export interface AtonalCollectionOptions<Model extends BaseModel> {
 
 export class AtonalCollection<
   Model extends BaseModel,
-  FlatModel extends OmitRef<BaseModel> = OmitRef<BaseModel>,
+  FlatModel extends OmitRef<Model> = OmitRef<Model>,
 > extends MongoModel {
   constructor(private readonly opts: AtonalCollectionOptions<Model>) {
     super()
