@@ -75,9 +75,9 @@ export interface PopulateItem<
 export type ModelKeys<T extends BaseModel> = Exclude<keyof T, number | symbol>
 
 export type OmitRef<T extends BaseModel> = {
-  [K in keyof T]: T[K] extends Ref<BaseModel>
+  [K in keyof T]: T[K] extends Ref<BaseModel> | undefined
     ? ObjectId
-    : T[K] extends Ref<BaseModel>[]
+    : T[K] extends Ref<BaseModel>[] | undefined
     ? ObjectId[]
     : T[K]
 }
