@@ -47,7 +47,10 @@ export interface Timestamps {
   updatedAt: Date
 }
 
-export type NewDocument<T> = Omit<OptionalId<T>, keyof Timestamps> &
+export type NewDocument<T extends BaseModel> = Omit<
+  OptionalId<T>,
+  keyof Timestamps
+> &
   Partial<Timestamps>
 
 export interface ExtraUpdateOptions {
@@ -86,7 +89,10 @@ export interface AtonalCollectionOptions<Model extends BaseModel> {
   timestamps?: boolean
 }
 
-export class AtonalCollection<Model extends BaseModel> extends MongoModel {
+export class AtonalCollection<
+  Model extends BaseModel,
+  FlatModel extends BaseModel = OmitRef<Model>,
+> extends MongoModel {
   constructor(private readonly opts: AtonalCollectionOptions<Model>) {
     super()
   }
@@ -111,7 +117,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     return this.collection.aggregate(pipeline, opts)
   }
 
-  async create(doc: NewDocument<Model>, opts: InsertOneOptions = {}) {
+  async create(doc: NewDocument<FlatModel>, opts: InsertOneOptions = {}) {
     if (this.opts.timestamps) {
       const now = new Date()
 
@@ -124,12 +130,15 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
       }
     }
 
-    await this.collection.insertOne(doc as OptionalId<Model>, opts)
+    await this.collection.insertOne(doc as OptionalId<FlatModel>, opts)
 
     return doc as unknown as Model
   }
 
-  async createMany(docs: NewDocument<Model>[], opts: BulkWriteOptions = {}) {
+  async createMany(
+    docs: NewDocument<FlatModel>[],
+    opts: BulkWriteOptions = {},
+  ) {
     if (this.opts.timestamps) {
       const now = new Date()
 
@@ -144,24 +153,24 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
       }
     }
 
-    await this.collection.insertMany(docs as OptionalId<Model>[], opts)
+    await this.collection.insertMany(docs as OptionalId<FlatModel>[], opts)
 
     return docs as unknown as Model[]
   }
 
-  find(filter: Filter<Model> = {}, opts: FindOptions<Model> = {}) {
+  find(filter: Filter<FlatModel> = {}, opts: FindOptions<FlatModel> = {}) {
     return this.collection.find(filter, opts)
   }
 
-  async findOne(filter: Filter<Model>, opts: FindOptions<Model> = {}) {
+  async findOne(filter: Filter<FlatModel>, opts: FindOptions<FlatModel> = {}) {
     return this.collection.findOne(filter, opts)
   }
 
-  async findById(_id: ObjectId, opts: FindOptions<Model> = {}) {
+  async findById(_id: ObjectId, opts: FindOptions<FlatModel> = {}) {
     return this.findOne({ _id }, opts)
   }
 
-  async exists(cond: ArrayOr<ObjectId> | Filter<Model>) {
+  async exists(cond: ArrayOr<ObjectId> | Filter<FlatModel>) {
     if (Array.isArray(cond)) {
       const items = await this.find(
         { _id: { $in: cond as any[] } },
@@ -185,8 +194,8 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
   }
 
   async updateOne(
-    filter: Filter<Model>,
-    update: UpdateFilter<Model>,
+    filter: Filter<FlatModel>,
+    update: UpdateFilter<FlatModel>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
@@ -198,15 +207,15 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
 
   async updateById(
     _id: ObjectId,
-    update: UpdateFilter<Model>,
+    update: UpdateFilter<FlatModel>,
     opts: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     return this.updateOne({ _id }, update, opts)
   }
 
   async updateMany(
-    filter: Filter<Model>,
-    update: UpdateFilter<Model>,
+    filter: Filter<FlatModel>,
+    update: UpdateFilter<FlatModel>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
@@ -217,8 +226,8 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
   }
 
   async findOneAndUpdate(
-    filter: Filter<Model>,
-    update: UpdateFilter<Model>,
+    filter: Filter<FlatModel>,
+    update: UpdateFilter<FlatModel>,
     {
       timestamps = true,
       ...opts
@@ -239,13 +248,13 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
 
   async findByIdAndUpdate(
     _id: ObjectId,
-    update: UpdateFilter<Model>,
+    update: UpdateFilter<FlatModel>,
     opts: FindOneAndUpdateOptions & ExtraUpdateOptions = {},
   ) {
     return this.findOneAndUpdate({ _id }, update, opts)
   }
 
-  async deleteOne(filter: Filter<Model>, opts: DeleteOptions = {}) {
+  async deleteOne(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
     return this.collection.deleteOne(filter, opts)
   }
 
@@ -253,12 +262,12 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
     return this.deleteOne({ _id }, opts)
   }
 
-  async deleteMany(filter: Filter<Model>, opts: DeleteOptions = {}) {
+  async deleteMany(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
     return this.collection.deleteMany(filter, opts)
   }
 
   async findOneAndDelete(
-    filter: Filter<Model>,
+    filter: Filter<FlatModel>,
     opts: FindOneAndDeleteOptions = {},
   ) {
     const { value } = await this.collection.findOneAndDelete(filter, opts)
@@ -271,7 +280,7 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
   }
 
   async countDocuments(
-    filter: Filter<Model> = {},
+    filter: Filter<FlatModel> = {},
     opts: CountDocumentsOptions = {},
   ) {
     return this.collection.countDocuments(filter, opts)
@@ -355,10 +364,10 @@ export class AtonalCollection<Model extends BaseModel> extends MongoModel {
   }
 
   get collection() {
-    return this.getClient().db().collection<Model>(this.opts.name)
+    return this.getClient().db().collection<FlatModel>(this.opts.name)
   }
 
-  private updateTimestamps(update: UpdateFilter<Model>) {
+  private updateTimestamps(update: UpdateFilter<FlatModel>) {
     if (update.$set) {
       if (!update.$set.hasOwnProperty('updatedAt')) {
         Object.assign(update.$set, {
