@@ -75,7 +75,11 @@ export interface PopulateItem<
 export type ModelKeys<T extends BaseModel> = Exclude<keyof T, number | symbol>
 
 export type OmitRef<T extends BaseModel> = {
-  [K in keyof T]: T[K] extends Ref<BaseModel> | undefined ? ObjectId : T[K]
+  [K in keyof T]: T[K] extends Ref<BaseModel>
+    ? ObjectId
+    : T[K] extends Ref<BaseModel>[]
+    ? ObjectId[]
+    : T[K]
 }
 
 export type Populated<T extends BaseModel, P extends keyof T> = Omit<T, P> & {
@@ -91,7 +95,7 @@ export interface AtonalCollectionOptions<Model extends BaseModel> {
 
 export class AtonalCollection<
   Model extends BaseModel,
-  FlatModel extends BaseModel = OmitRef<Model>,
+  FlatModel extends OmitRef<BaseModel> = OmitRef<Model>,
 > extends MongoModel {
   constructor(private readonly opts: AtonalCollectionOptions<Model>) {
     super()
