@@ -82,8 +82,14 @@ export type OmitRef<T extends BaseModel> = {
     : T[K]
 }
 
-export type Populated<T extends BaseModel, P extends keyof T> = Omit<T, P> & {
-  [key in P]: T[P] extends Ref<infer X> | undefined ? X : never
+export type Populated<T extends BaseModel> = {
+  [K in keyof T]: T[K] extends ObjectId
+    ? ObjectId
+    : T[K] extends Ref<infer X> | undefined
+    ? X
+    : T[K] extends Ref<infer X>[] | undefined
+    ? X[]
+    : T[K]
 }
 
 export interface AtonalCollectionOptions<Model extends BaseModel> {
@@ -95,7 +101,7 @@ export interface AtonalCollectionOptions<Model extends BaseModel> {
 
 export class AtonalCollection<
   Model extends BaseModel,
-  FlatModel extends OmitRef<BaseModel> = OmitRef<Model>,
+  FlatModel extends OmitRef<BaseModel> = OmitRef<BaseModel>,
 > extends MongoModel {
   constructor(private readonly opts: AtonalCollectionOptions<Model>) {
     super()
@@ -134,7 +140,7 @@ export class AtonalCollection<
       }
     }
 
-    await this.collection.insertOne(doc as OptionalId<FlatModel>, opts)
+    await this.collection.insertOne(doc as unknown as OptionalId<Model>, opts)
 
     return doc as unknown as Model
   }
@@ -157,17 +163,20 @@ export class AtonalCollection<
       }
     }
 
-    await this.collection.insertMany(docs as OptionalId<FlatModel>[], opts)
+    await this.collection.insertMany(
+      docs as unknown as OptionalId<Model>[],
+      opts,
+    )
 
     return docs as unknown as Model[]
   }
 
   find(filter: Filter<FlatModel> = {}, opts: FindOptions<FlatModel> = {}) {
-    return this.collection.find(filter, opts)
+    return this.collection.find(filter as Filter<Model>, opts)
   }
 
   async findOne(filter: Filter<FlatModel>, opts: FindOptions<FlatModel> = {}) {
-    return this.collection.findOne(filter, opts)
+    return this.collection.findOne(filter as Filter<Model>, opts)
   }
 
   async findById(_id: ObjectId, opts: FindOptions<FlatModel> = {}) {
@@ -206,7 +215,11 @@ export class AtonalCollection<
       this.updateTimestamps(update)
     }
 
-    return this.collection.updateOne(filter, update, opts)
+    return this.collection.updateOne(
+      filter as Filter<Model>,
+      update as UpdateFilter<Model>,
+      opts,
+    )
   }
 
   async updateById(
@@ -226,7 +239,11 @@ export class AtonalCollection<
       this.updateTimestamps(update)
     }
 
-    return this.collection.updateMany(filter, update, opts)
+    return this.collection.updateMany(
+      filter as Filter<Model>,
+      update as UpdateFilter<Model>,
+      opts,
+    )
   }
 
   async findOneAndUpdate(
@@ -242,8 +259,8 @@ export class AtonalCollection<
     }
 
     const { value } = await this.collection.findOneAndUpdate(
-      filter,
-      update,
+      filter as Filter<Model>,
+      update as UpdateFilter<Model>,
       opts,
     )
 
@@ -259,7 +276,7 @@ export class AtonalCollection<
   }
 
   async deleteOne(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
-    return this.collection.deleteOne(filter, opts)
+    return this.collection.deleteOne(filter as Filter<Model>, opts)
   }
 
   async deleteById(_id: ObjectId, opts: DeleteOptions = {}) {
@@ -267,14 +284,17 @@ export class AtonalCollection<
   }
 
   async deleteMany(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
-    return this.collection.deleteMany(filter, opts)
+    return this.collection.deleteMany(filter as Filter<Model>, opts)
   }
 
   async findOneAndDelete(
     filter: Filter<FlatModel>,
     opts: FindOneAndDeleteOptions = {},
   ) {
-    const { value } = await this.collection.findOneAndDelete(filter, opts)
+    const { value } = await this.collection.findOneAndDelete(
+      filter as Filter<Model>,
+      opts,
+    )
 
     return value
   }
@@ -287,7 +307,7 @@ export class AtonalCollection<
     filter: Filter<FlatModel> = {},
     opts: CountDocumentsOptions = {},
   ) {
-    return this.collection.countDocuments(filter, opts)
+    return this.collection.countDocuments(filter as Filter<Model>, opts)
   }
 
   async estimatedDocumentCount(opts: EstimatedDocumentCountOptions = {}) {
@@ -368,7 +388,7 @@ export class AtonalCollection<
   }
 
   get collection() {
-    return this.getClient().db().collection<FlatModel>(this.opts.name)
+    return this.getClient().db().collection<Model>(this.opts.name)
   }
 
   private updateTimestamps(update: UpdateFilter<FlatModel>) {
@@ -409,6 +429,10 @@ export const asDoc = <T extends BaseModel>(ref: Ref<T>) => {
   }
 
   return ref
+}
+
+export const asPopulated = <T extends BaseModel>(doc: T) => {
+  return doc as Populated<T>
 }
 
 export const useCollection = <Model extends BaseModel>(
