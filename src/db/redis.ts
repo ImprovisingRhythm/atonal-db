@@ -10,11 +10,13 @@ export const getRedisTime = (time: string | number) => {
   return time
 }
 
-export type RedisValueType = 'string' | 'number' | 'record'
+export type RedisValueType = 'string' | 'number' | 'boolean' | 'record'
 export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
   ? string
   : T extends 'number'
   ? number
+  : T extends 'boolean'
+  ? boolean
   : Record<string, any>
 
 export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
@@ -31,6 +33,10 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
       return String(value)
     }
 
+    if (this.type === 'boolean') {
+      return value ? '1' : '0'
+    }
+
     return JSON.stringify(value)
   }
 
@@ -39,12 +45,20 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
       return values.map(value => String(value))
     }
 
+    if (this.type === 'boolean') {
+      return values.map(value => (value ? '1' : '0'))
+    }
+
     return values.map(value => JSON.stringify(value))
   }
 
   protected parse(value: string) {
     if (this.type === 'number') {
       return Number(value) as RedisValueNativeType<T>
+    }
+
+    if (this.type === 'boolean') {
+      return (value === '1' ? true : false) as RedisValueNativeType<T>
     }
 
     if (this.type === 'record') {
@@ -57,6 +71,12 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
   protected parseMany(values: string[]) {
     if (this.type === 'number') {
       return values.map(value => Number(value)) as RedisValueNativeType<T>[]
+    }
+
+    if (this.type === 'boolean') {
+      return values.map(value =>
+        value === '1' ? true : false,
+      ) as RedisValueNativeType<T>[]
     }
 
     if (this.type === 'record') {
