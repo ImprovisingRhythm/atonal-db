@@ -92,18 +92,29 @@ export interface RedisConfig {
   host: string
   password?: string
   db?: number
+  dropBufferSupport?: boolean
+  enableAutoPipelining?: boolean
+  noDelay?: boolean
 }
 
-export const useRedis = ({ port, host, password, db }: RedisConfig) => {
+export const useRedis = ({
+  port,
+  host,
+  password,
+  db,
+  dropBufferSupport = true,
+  enableAutoPipelining = true,
+  noDelay = true,
+}: RedisConfig) => {
   return new Promise<Redis>(resolve => {
     const client = new IORedis({
       port,
       host,
       password,
       db,
-      dropBufferSupport: true,
-      enableAutoPipelining: true,
-      noDelay: false,
+      dropBufferSupport,
+      enableAutoPipelining,
+      noDelay,
     })
 
     client.once('ready', () => resolve(client))
