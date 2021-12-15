@@ -1,4 +1,4 @@
-import IORedis, { Redis } from 'ioredis'
+import IORedis, { Redis, RedisOptions } from 'ioredis'
 import ms from 'ms'
 import { InitableModel } from './model'
 
@@ -87,35 +87,11 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
   }
 }
 
-export interface RedisConfig {
-  port: number
-  host: string
-  password?: string
-  db?: number
-  dropBufferSupport?: boolean
-  enableAutoPipelining?: boolean
-  noDelay?: boolean
-}
+export interface RedisConfig extends RedisOptions {}
 
-export const useRedis = ({
-  port,
-  host,
-  password,
-  db,
-  dropBufferSupport = true,
-  enableAutoPipelining = true,
-  noDelay = true,
-}: RedisConfig) => {
+export const useRedis = (config: RedisConfig) => {
   return new Promise<Redis>(resolve => {
-    const client = new IORedis({
-      port,
-      host,
-      password,
-      db,
-      dropBufferSupport,
-      enableAutoPipelining,
-      noDelay,
-    })
+    const client = new IORedis(config)
 
     client.once('ready', () => resolve(client))
   })

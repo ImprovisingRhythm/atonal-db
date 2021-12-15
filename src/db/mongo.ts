@@ -5,11 +5,10 @@ export { ObjectId } from 'mongodb'
 
 export class MongoModel extends InitableModel<MongoClient> {}
 
-export interface MongoConfig {
+export interface MongoConfig extends MongoClientOptions {
   url: string
-  options: MongoClientOptions
 }
 
-export const useMongo = ({ url, options }: MongoConfig) => {
-  return new MongoClient(url, options).connect()
+export const useMongo = ({ url, ...opts }: MongoConfig) => {
+  return new MongoClient(url, opts).connect()
 }
