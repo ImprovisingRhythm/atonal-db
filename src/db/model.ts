@@ -1,5 +1,5 @@
 import { MongoModel } from './mongo'
-import { RedisModel, RedisType } from './redis'
+import { RedisModel, RedisTypeKey } from './redis'
 
 export class InitableModel<T> {
   private client?: T
@@ -22,9 +22,9 @@ export class InitableModel<T> {
 }
 
 export interface MultiModel {
-  [key: string]: MongoModel | RedisModel<RedisType> | MultiModel
+  [key: string]: MongoModel | RedisModel<RedisTypeKey> | MultiModel
 }
 
-export type DBModel = MongoModel | RedisModel<RedisType> | MultiModel
+export type DBModel = MongoModel | RedisModel<RedisTypeKey> | MultiModel
 
 export const useMultiModel = <T extends MultiModel>(models: T) => models
