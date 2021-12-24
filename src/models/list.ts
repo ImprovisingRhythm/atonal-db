@@ -27,6 +27,10 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
   async at(index: number) {
     const value = await this.getClient().lindex(this.key, index)
 
+    if (value === null) {
+      return null
+    }
+
     return this.parse(value)
   }
 
@@ -65,7 +69,13 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async pop() {
-    return this.getClient().rpop(this.key)
+    const value = await this.getClient().rpop(this.key)
+
+    if (value === null) {
+      return null
+    }
+
+    return this.parse(value)
   }
 
   async unshift(...values: RedisValueNativeType<T>[]) {
@@ -74,6 +84,10 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
 
   async shift() {
     const value = await this.getClient().lpop(this.key)
+
+    if (value === null) {
+      return null
+    }
 
     return this.parse(value)
   }
