@@ -1,15 +1,26 @@
 import { Redis } from 'ioredis'
 import { mapValues } from 'lodash'
-import { RedisModel, RedisType, RedisTypeLiteral } from '../db/redis'
+import {
+  GetRedisTypeFromKey,
+  RedisModel,
+  RedisType,
+  RedisTypeKey,
+} from '../db/redis'
 
-export interface AtonalMapOptions<T extends RedisType> {
+export interface AtonalMapOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: RedisTypeLiteral
+  type: K
   defaultValue?: Record<string, T>
 }
 
-export class AtonalMap<T extends RedisType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalMapOptions<T>) {
+export class AtonalMap<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalMapOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -70,5 +81,9 @@ export class AtonalMap<T extends RedisType> extends RedisModel<T> {
   }
 }
 
-export const useMap = <T extends RedisType>(opts: AtonalMapOptions<T>) =>
-  new AtonalMap(opts)
+export const useMap = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalMapOptions<K, T>,
+) => new AtonalMap(opts)

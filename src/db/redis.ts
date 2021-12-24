@@ -10,11 +10,22 @@ export const getRedisTime = (time: string | number) => {
   return time
 }
 
-export type RedisTypeLiteral = 'string' | 'number' | 'boolean' | 'record'
+export type RedisTypeKey = 'string' | 'number' | 'boolean' | 'record'
 export type RedisType = string | number | boolean | Record<string, any>
 
-export class RedisModel<T extends RedisType> extends InitableModel<Redis> {
-  constructor(private name: string, private type: RedisTypeLiteral) {
+export type GetRedisTypeFromKey<T extends RedisTypeKey> = T extends 'string'
+  ? string
+  : T extends 'number'
+  ? number
+  : T extends 'boolean'
+  ? boolean
+  : Record<string, any>
+
+export class RedisModel<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends InitableModel<Redis> {
+  constructor(private name: string, private type: K) {
     super()
   }
 

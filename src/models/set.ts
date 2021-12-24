@@ -1,14 +1,25 @@
 import { Redis } from 'ioredis'
-import { RedisModel, RedisType, RedisTypeLiteral } from '../db/redis'
+import {
+  GetRedisTypeFromKey,
+  RedisModel,
+  RedisTypeKey,
+  RedisType,
+} from '../db/redis'
 
-export interface AtonalSetOptions<T extends RedisType> {
+export interface AtonalSetOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: RedisTypeLiteral
+  type: K
   defaultValues?: T[]
 }
 
-export class AtonalSet<T extends RedisType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalSetOptions<T>) {
+export class AtonalSet<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalSetOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -51,7 +62,7 @@ export class AtonalSet<T extends RedisType> extends RedisModel<T> {
     return this.getClient().scard(this.key)
   }
 
-  async intersection(...items: AtonalSet<T>[]) {
+  async intersection(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sinter(
       this.key,
       ...items.map(item => item.key),
@@ -60,7 +71,7 @@ export class AtonalSet<T extends RedisType> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async difference(...items: AtonalSet<T>[]) {
+  async difference(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sdiff(
       this.key,
       ...items.map(item => item.key),
@@ -69,7 +80,7 @@ export class AtonalSet<T extends RedisType> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async union(...items: AtonalSet<T>[]) {
+  async union(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sunion(
       this.key,
       ...items.map(item => item.key),
@@ -83,5 +94,9 @@ export class AtonalSet<T extends RedisType> extends RedisModel<T> {
   }
 }
 
-export const useSet = <T extends RedisType>(opts: AtonalSetOptions<T>) =>
-  new AtonalSet(opts)
+export const useSet = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalSetOptions<K, T>,
+) => new AtonalSet(opts)

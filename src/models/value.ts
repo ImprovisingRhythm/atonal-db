@@ -1,19 +1,26 @@
 import { Redis } from 'ioredis'
 import {
-  getRedisTime,
+  GetRedisTypeFromKey,
   RedisModel,
   RedisType,
-  RedisTypeLiteral,
+  RedisTypeKey,
+  getRedisTime,
 } from '../db/redis'
 
-export interface AtonalValueOptions<T extends RedisType> {
+export interface AtonalValueOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: RedisTypeLiteral
+  type: K
   defaultValue?: T
 }
 
-export class AtonalValue<T extends RedisType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalValueOptions<T>) {
+export class AtonalValue<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalValueOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -67,5 +74,9 @@ export class AtonalValue<T extends RedisType> extends RedisModel<T> {
   }
 }
 
-export const useValue = <T extends RedisType>(opts: AtonalValueOptions<T>) =>
-  new AtonalValue(opts)
+export const useValue = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalValueOptions<K, T>,
+) => new AtonalValue(opts)
