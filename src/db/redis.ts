@@ -22,7 +22,7 @@ export type GetRedisTypeFromKey<T extends RedisTypeKey> = T extends 'string'
   : Record<string, any>
 
 export class RedisModel<
-  K extends RedisTypeKey,
+  K extends RedisTypeKey = RedisTypeKey,
   T extends RedisType = GetRedisTypeFromKey<K>,
 > extends InitableModel<Redis> {
   constructor(private name: string, private type: K) {
