@@ -1,19 +1,26 @@
 import { Redis } from 'ioredis'
 import {
-  RedisValueNativeType,
+  GetRedisTypeFromKey,
   RedisModel,
-  RedisValueType,
+  RedisType,
+  RedisTypeKey,
   getRedisTime,
 } from '../db/redis'
 
-export interface AtonalValueOptions<T extends RedisValueType> {
+export interface AtonalValueOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: T
-  defaultValue?: RedisValueNativeType<T>
+  type: K
+  defaultValue?: T
 }
 
-export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalValueOptions<T>) {
+export class AtonalValue<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalValueOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -29,7 +36,7 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async set(value: RedisValueNativeType<T>, expiresIn?: string | number) {
+  async set(value: T, expiresIn?: string | number) {
     const client = this.getClient()
 
     if (expiresIn) {
@@ -67,6 +74,9 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   }
 }
 
-export const useValue = <T extends RedisValueType>(
-  opts: AtonalValueOptions<T>,
+export const useValue = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalValueOptions<K, T>,
 ) => new AtonalValue(opts)

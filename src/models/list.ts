@@ -1,14 +1,25 @@
 import { Redis } from 'ioredis'
-import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
+import {
+  GetRedisTypeFromKey,
+  RedisModel,
+  RedisType,
+  RedisTypeKey,
+} from '../db/redis'
 
-export interface AtonalListOptions<T extends RedisValueType> {
+export interface AtonalListOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: T
-  defaultValues?: RedisValueNativeType<T>[]
+  type: K
+  defaultValues?: T[]
 }
 
-export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalListOptions<T>) {
+export class AtonalList<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalListOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -30,7 +41,7 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
     return this.parse(value)
   }
 
-  async indexOf(value: RedisValueNativeType<T>) {
+  async indexOf(value: T) {
     const index = await this.getClient().lpos(this.key, this.stringify(value))
 
     if (index === null) {
@@ -60,29 +71,39 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async push(...values: RedisValueNativeType<T>[]) {
+  async push(...values: T[]) {
     return this.getClient().rpush(this.key, ...this.stringifyMany(values))
   }
 
   async pop() {
-    return this.getClient().rpop(this.key)
+    const value = await this.getClient().rpop(this.key)
+
+    if (value === 'nil') {
+      return null
+    }
+
+    return this.parse(value)
   }
 
-  async unshift(...values: RedisValueNativeType<T>[]) {
+  async unshift(...values: T[]) {
     return this.getClient().lpush(this.key, ...this.stringifyMany(values))
   }
 
   async shift() {
     const value = await this.getClient().lpop(this.key)
 
+    if (value === 'nil') {
+      return null
+    }
+
     return this.parse(value)
   }
 
-  async removeFirst(value: RedisValueNativeType<T>) {
+  async removeFirst(value: T) {
     return this.getClient().lrem(this.key, 1, this.stringify(value))
   }
 
-  async removeAll(value: RedisValueNativeType<T>) {
+  async removeAll(value: T) {
     return this.getClient().lrem(this.key, 0, this.stringify(value))
   }
 
@@ -91,5 +112,9 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
   }
 }
 
-export const useList = <T extends RedisValueType>(opts: AtonalListOptions<T>) =>
-  new AtonalList(opts)
+export const useList = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalListOptions<K, T>,
+) => new AtonalList(opts)

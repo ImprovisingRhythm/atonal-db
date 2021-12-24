@@ -1,14 +1,25 @@
 import { Redis } from 'ioredis'
-import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
+import {
+  GetRedisTypeFromKey,
+  RedisModel,
+  RedisTypeKey,
+  RedisType,
+} from '../db/redis'
 
-export interface AtonalSetOptions<T extends RedisValueType> {
+export interface AtonalSetOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: T
-  defaultValues?: RedisValueNativeType<T>[]
+  type: K
+  defaultValues?: T[]
 }
 
-export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalSetOptions<T>) {
+export class AtonalSet<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalSetOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -24,15 +35,15 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async add(...values: RedisValueNativeType<T>[]) {
+  async add(...values: T[]) {
     return this.getClient().sadd(this.key, ...this.stringifyMany(values))
   }
 
-  async remove(value: RedisValueNativeType<T>) {
+  async remove(value: T) {
     return this.getClient().srem(this.key, this.stringify(value))
   }
 
-  async has(value: RedisValueNativeType<T>) {
+  async has(value: T) {
     const res = await this.getClient().sismember(
       this.key,
       this.stringify(value),
@@ -51,7 +62,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     return this.getClient().scard(this.key)
   }
 
-  async intersection(...items: AtonalSet<T>[]) {
+  async intersection(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sinter(
       this.key,
       ...items.map(item => item.key),
@@ -60,7 +71,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async difference(...items: AtonalSet<T>[]) {
+  async difference(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sdiff(
       this.key,
       ...items.map(item => item.key),
@@ -69,7 +80,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     return this.parseMany(values)
   }
 
-  async union(...items: AtonalSet<T>[]) {
+  async union(...items: AtonalSet<K, T>[]) {
     const values: string[] = await this.getClient().sunion(
       this.key,
       ...items.map(item => item.key),
@@ -83,5 +94,9 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 }
 
-export const useSet = <T extends RedisValueType>(opts: AtonalSetOptions<T>) =>
-  new AtonalSet(opts)
+export const useSet = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalSetOptions<K, T>,
+) => new AtonalSet(opts)

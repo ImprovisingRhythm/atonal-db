@@ -1,19 +1,26 @@
 import { Redis } from 'ioredis'
 import {
-  RedisValueNativeType,
   RedisModel,
-  RedisValueType,
   getRedisTime,
+  RedisTypeKey,
+  RedisType,
+  GetRedisTypeFromKey,
 } from '../db/redis'
 
-export interface AtonalKVOptions<T extends RedisValueType> {
+export interface AtonalKVOptions<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> {
   name: string
-  type: T
-  defaultValue?: Record<string, RedisValueNativeType<T>>
+  type: K
+  defaultValue?: Record<string, T>
 }
 
-export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
-  constructor(private readonly opts: AtonalKVOptions<T>) {
+export class AtonalKV<
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+> extends RedisModel<K, T> {
+  constructor(private readonly opts: AtonalKVOptions<K, T>) {
     super(opts.name, opts.type)
   }
 
@@ -29,11 +36,7 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async set(
-    key: string,
-    value: RedisValueNativeType<T>,
-    expiresIn?: string | number,
-  ) {
+  async set(key: string, value: T, expiresIn?: string | number) {
     const client = this.getClient()
 
     if (expiresIn) {
@@ -48,10 +51,7 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async assign(
-    data: Record<string, RedisValueNativeType<T>>,
-    expiresIn?: string | number,
-  ) {
+  async assign(data: Record<string, T>, expiresIn?: string | number) {
     await Promise.all(
       Object.entries(data).map(([key, value]) =>
         this.set(key, value, expiresIn),
@@ -90,5 +90,9 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
   }
 }
 
-export const useKV = <T extends RedisValueType>(opts: AtonalKVOptions<T>) =>
-  new AtonalKV(opts)
+export const useKV = <
+  K extends RedisTypeKey,
+  T extends RedisType = GetRedisTypeFromKey<K>,
+>(
+  opts: AtonalKVOptions<K, T>,
+) => new AtonalKV(opts)
