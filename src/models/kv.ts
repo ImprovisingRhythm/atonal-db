@@ -1,26 +1,19 @@
 import { Redis } from 'ioredis'
 import {
-  RedisModel,
   getRedisTime,
-  RedisTypeKey,
+  RedisModel,
   RedisType,
-  GetRedisTypeFromKey,
+  RedisTypeLiteral,
 } from '../db/redis'
 
-export interface AtonalKVOptions<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> {
+export interface AtonalKVOptions<T extends RedisType> {
   name: string
-  type: K
+  type: RedisTypeLiteral
   defaultValue?: Record<string, T>
 }
 
-export class AtonalKV<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> extends RedisModel<K, T> {
-  constructor(private readonly opts: AtonalKVOptions<K, T>) {
+export class AtonalKV<T extends RedisType> extends RedisModel<T> {
+  constructor(private readonly opts: AtonalKVOptions<T>) {
     super(opts.name, opts.type)
   }
 
@@ -90,9 +83,5 @@ export class AtonalKV<
   }
 }
 
-export const useKV = <
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
->(
-  opts: AtonalKVOptions<K, T>,
-) => new AtonalKV(opts)
+export const useKV = <T extends RedisType>(opts: AtonalKVOptions<T>) =>
+  new AtonalKV(opts)

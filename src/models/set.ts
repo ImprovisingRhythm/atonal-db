@@ -1,25 +1,14 @@
 import { Redis } from 'ioredis'
-import {
-  GetRedisTypeFromKey,
-  RedisModel,
-  RedisTypeKey,
-  RedisType,
-} from '../db/redis'
+import { RedisModel, RedisType, RedisTypeLiteral } from '../db/redis'
 
-export interface AtonalSetOptions<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> {
+export interface AtonalSetOptions<T extends RedisType> {
   name: string
-  type: K
+  type: RedisTypeLiteral
   defaultValues?: T[]
 }
 
-export class AtonalSet<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> extends RedisModel<K, T> {
-  constructor(private readonly opts: AtonalSetOptions<K, T>) {
+export class AtonalSet<T extends RedisType> extends RedisModel<T> {
+  constructor(private readonly opts: AtonalSetOptions<T>) {
     super(opts.name, opts.type)
   }
 
@@ -62,7 +51,7 @@ export class AtonalSet<
     return this.getClient().scard(this.key)
   }
 
-  async intersection(...items: AtonalSet<K, T>[]) {
+  async intersection(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sinter(
       this.key,
       ...items.map(item => item.key),
@@ -71,7 +60,7 @@ export class AtonalSet<
     return this.parseMany(values)
   }
 
-  async difference(...items: AtonalSet<K, T>[]) {
+  async difference(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sdiff(
       this.key,
       ...items.map(item => item.key),
@@ -80,7 +69,7 @@ export class AtonalSet<
     return this.parseMany(values)
   }
 
-  async union(...items: AtonalSet<K, T>[]) {
+  async union(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sunion(
       this.key,
       ...items.map(item => item.key),
@@ -94,9 +83,5 @@ export class AtonalSet<
   }
 }
 
-export const useSet = <
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
->(
-  opts: AtonalSetOptions<K, T>,
-) => new AtonalSet(opts)
+export const useSet = <T extends RedisType>(opts: AtonalSetOptions<T>) =>
+  new AtonalSet(opts)
