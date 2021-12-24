@@ -41,41 +41,41 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
     return !!res
   }
 
-  async values() {
+  async values<R = RedisValueNativeType<T>>() {
     const values = await this.getClient().smembers(this.key)
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
   async size() {
     return this.getClient().scard(this.key)
   }
 
-  async intersection(...items: AtonalSet<T>[]) {
+  async intersection<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sinter(
       this.key,
       ...items.map(item => item.key),
     )
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
-  async difference(...items: AtonalSet<T>[]) {
+  async difference<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sdiff(
       this.key,
       ...items.map(item => item.key),
     )
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
-  async union(...items: AtonalSet<T>[]) {
+  async union<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
     const values: string[] = await this.getClient().sunion(
       this.key,
       ...items.map(item => item.key),
     )
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
   async clear() {

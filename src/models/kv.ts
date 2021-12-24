@@ -59,14 +59,14 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
     )
   }
 
-  async get(key: string) {
+  async get<R = RedisValueNativeType<T>>(key: string) {
     const value = await this.getClient().get(`${this.key}:${key}`)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as R
   }
 
   async remove(key: string) {

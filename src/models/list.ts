@@ -24,14 +24,14 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async at(index: number) {
+  async at<R = RedisValueNativeType<T>>(index: number) {
     const value = await this.getClient().lindex(this.key, index)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as R
   }
 
   async indexOf(value: RedisValueNativeType<T>) {
@@ -48,48 +48,48 @@ export class AtonalList<T extends RedisValueType> extends RedisModel<T> {
     return this.getClient().llen(this.key)
   }
 
-  async values() {
+  async values<R = RedisValueNativeType<T>>() {
     const values = await this.getClient().lrange(this.key, 0, -1)
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
-  async slice(start: number, end?: number) {
+  async slice<R = RedisValueNativeType<T>>(start: number, end?: number) {
     const values = await this.getClient().lrange(
       this.key,
       start,
       end ? end - 1 : -1,
     )
 
-    return this.parseMany(values)
+    return this.parseMany(values) as R[]
   }
 
   async push(...values: RedisValueNativeType<T>[]) {
     return this.getClient().rpush(this.key, ...this.stringifyMany(values))
   }
 
-  async pop() {
+  async pop<R = RedisValueNativeType<T>>() {
     const value = await this.getClient().rpop(this.key)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as R
   }
 
   async unshift(...values: RedisValueNativeType<T>[]) {
     return this.getClient().lpush(this.key, ...this.stringifyMany(values))
   }
 
-  async shift() {
+  async shift<R = RedisValueNativeType<T>>() {
     const value = await this.getClient().lpop(this.key)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as R
   }
 
   async removeFirst(value: RedisValueNativeType<T>) {

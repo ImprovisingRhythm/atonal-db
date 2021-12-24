@@ -44,14 +44,14 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
     }
   }
 
-  async get() {
+  async get<CustomType = RedisValueNativeType<T>>() {
     const value = await this.getClient().get(this.key)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as CustomType
   }
 
   async delete() {

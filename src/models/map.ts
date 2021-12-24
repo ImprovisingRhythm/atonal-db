@@ -36,20 +36,20 @@ export class AtonalMap<T extends RedisValueType> extends RedisModel<T> {
     )
   }
 
-  async get(key: string) {
+  async get<R = RedisValueNativeType<T>>(key: string) {
     const value = await this.getClient().hget(this.key, key)
 
     if (value === null) {
       return null
     }
 
-    return this.parse(value)
+    return this.parse(value) as R
   }
 
-  async getAll() {
+  async getAll<R = RedisValueNativeType<T>>() {
     const data = await this.getClient().hgetall(this.key)
 
-    return mapValues(data, value => this.parse(value))
+    return mapValues(data, value => this.parse(value)) as Record<string, R>
   }
 
   async remove(key: string) {
