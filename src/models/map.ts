@@ -1,26 +1,15 @@
 import { Redis } from 'ioredis'
 import { mapValues } from 'lodash'
-import {
-  GetRedisTypeFromKey,
-  RedisModel,
-  RedisType,
-  RedisTypeKey,
-} from '../db/redis'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
-export interface AtonalMapOptions<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> {
+export interface AtonalMapOptions<T extends RedisValueType> {
   name: string
-  type: K
-  defaultValue?: Record<string, T>
+  type: T
+  defaultValue?: Record<string, RedisValueNativeType<T>>
 }
 
-export class AtonalMap<
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
-> extends RedisModel<K, T> {
-  constructor(private readonly opts: AtonalMapOptions<K, T>) {
+export class AtonalMap<T extends RedisValueType> extends RedisModel<T> {
+  constructor(private readonly opts: AtonalMapOptions<T>) {
     super(opts.name, opts.type)
   }
 
@@ -36,11 +25,11 @@ export class AtonalMap<
     }
   }
 
-  async set(key: string, value: T) {
+  async set(key: string, value: RedisValueNativeType<T>) {
     return this.getClient().hset(this.key, key, this.stringify(value))
   }
 
-  async assign(data: Record<string, T>) {
+  async assign(data: Record<string, RedisValueNativeType<T>>) {
     return this.getClient().hset(
       this.key,
       mapValues(data, value => this.stringify(value)),
@@ -81,9 +70,5 @@ export class AtonalMap<
   }
 }
 
-export const useMap = <
-  K extends RedisTypeKey,
-  T extends RedisType = GetRedisTypeFromKey<K>,
->(
-  opts: AtonalMapOptions<K, T>,
-) => new AtonalMap(opts)
+export const useMap = <T extends RedisValueType>(opts: AtonalMapOptions<T>) =>
+  new AtonalMap(opts)
