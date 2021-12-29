@@ -4,6 +4,8 @@ import { DBModel } from './db/model'
 import { MongoConfig, MongoModel, useMongo } from './db/mongo'
 import { RedisConfig, RedisModel, useRedis } from './db/redis'
 
+export * from './common/collection'
+export * from './common/regex-search'
 export * from './db/model'
 export * from './db/mongo'
 export * from './db/redis'
