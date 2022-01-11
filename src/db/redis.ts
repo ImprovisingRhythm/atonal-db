@@ -4,7 +4,7 @@ import { InitableModel } from './model'
 
 export const getRedisTime = (time: string | number) => {
   if (typeof time === 'string') {
-    return ms(time) / 1000
+    return Math.floor(ms(time) / 1000)
   }
 
   return time
