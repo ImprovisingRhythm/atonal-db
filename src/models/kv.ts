@@ -18,7 +18,7 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
   }
 
   protected async _init(client: Redis) {
-    super._init(client)
+    await super._init(client)
 
     if (this.opts.defaultValue) {
       const existing = await client.exists(this.key)

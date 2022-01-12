@@ -75,9 +75,9 @@ export interface PopulateItem<
 export type ModelKeys<T extends BaseModel> = Exclude<keyof T, number | symbol>
 
 export type OmitRef<T extends BaseModel> = {
-  [K in keyof T]: T[K] extends ObjectId | undefined
+  [K in keyof T]: T[K] extends Ref<infer _X> | undefined
     ? ObjectId
-    : T[K] extends ObjectId[] | undefined
+    : T[K] extends Ref<infer _X>[] | undefined
     ? ObjectId[]
     : T[K]
 }
@@ -108,7 +108,7 @@ export class AtonalCollection<
   }
 
   protected async _init(client: MongoClient) {
-    super._init(client)
+    await super._init(client)
 
     if (this.opts.sync) {
       await this.syncIndexes()

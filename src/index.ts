@@ -11,6 +11,7 @@ export * from './db/mongo'
 export * from './db/redis'
 export * from './models/collection'
 export * from './models/kv'
+export * from './models/lazy'
 export * from './models/list'
 export * from './models/map'
 export * from './models/set'
@@ -52,21 +53,21 @@ export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {
     return redisClient
   }
 
-  const initModels = (models: DBModel[]) => {
+  const initModels = async (models: DBModel[]) => {
     for (const model of models) {
       if (model instanceof MongoModel) {
         // @ts-ignore
-        model._init(getMongoClient())
+        await model._init(getMongoClient())
       } else if (model instanceof RedisModel) {
         // @ts-ignore
-        model._init(getRedisClient())
+        await model._init(getRedisClient())
       } else {
         initModels(Object.values(model))
       }
     }
   }
 
-  initModels(models)
+  await initModels(models)
 
   return {
     getMongoClient,
