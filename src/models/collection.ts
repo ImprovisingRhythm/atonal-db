@@ -208,7 +208,7 @@ export class AtonalCollection<
 
   async updateOne(
     filter: Filter<FlatModel>,
-    update: UpdateFilter<FlatModel>,
+    update: UpdateFilter<Model>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
@@ -224,7 +224,7 @@ export class AtonalCollection<
 
   async updateById(
     _id: ObjectId,
-    update: UpdateFilter<FlatModel>,
+    update: UpdateFilter<Model>,
     opts: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     return this.updateOne({ _id }, update, opts)
@@ -232,7 +232,7 @@ export class AtonalCollection<
 
   async updateMany(
     filter: Filter<FlatModel>,
-    update: UpdateFilter<FlatModel>,
+    update: UpdateFilter<Model>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
   ) {
     if (this.opts.timestamps && timestamps) {
@@ -248,7 +248,7 @@ export class AtonalCollection<
 
   async findOneAndUpdate(
     filter: Filter<FlatModel>,
-    update: UpdateFilter<FlatModel>,
+    update: UpdateFilter<Model>,
     {
       timestamps = true,
       ...opts
@@ -269,7 +269,7 @@ export class AtonalCollection<
 
   async findByIdAndUpdate(
     _id: ObjectId,
-    update: UpdateFilter<FlatModel>,
+    update: UpdateFilter<Model>,
     opts: FindOneAndUpdateOptions & ExtraUpdateOptions = {},
   ) {
     return this.findOneAndUpdate({ _id }, update, opts)
@@ -391,7 +391,7 @@ export class AtonalCollection<
     return this.getClient().db().collection<Model>(this.opts.name)
   }
 
-  private updateTimestamps(update: UpdateFilter<FlatModel>) {
+  private updateTimestamps(update: UpdateFilter<Model>) {
     if (update.$set) {
       if (!update.$set.hasOwnProperty('updatedAt')) {
         Object.assign(update.$set, {
