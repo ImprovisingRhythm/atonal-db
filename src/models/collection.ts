@@ -34,6 +34,7 @@ export type IndexKeys<Model extends BaseModel> = Record<
 
 export type Index<Model extends BaseModel> =
   | [IndexKeys<Model>, CreateIndexesOptions]
+  | [IndexKeys<Model>]
   | IndexKeys<Model>
 
 export type Ref<Model extends BaseModel> = Model | ObjectId
