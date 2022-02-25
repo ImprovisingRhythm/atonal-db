@@ -27,10 +27,11 @@ import {
 import { ArrayOr, isEmpty, isNotEmpty, PromiseOr } from '../common/helper'
 import { MongoModel } from '../db/mongo'
 
-export type IndexKeys<Model extends BaseModel> = Record<
-  keyof Partial<Model> | string,
-  1 | -1 | '2d' | '2dsphere'
->
+export type IndexKeys<Model extends BaseModel> = {
+  [key in keyof Partial<Model> | string]: 1 | -1 | '2d' | '2dsphere'
+} & {
+  [key: string]: 1 | -1 | '2d' | '2dsphere'
+}
 
 export type Index<Model extends BaseModel> =
   | [IndexKeys<Model>, CreateIndexesOptions]
