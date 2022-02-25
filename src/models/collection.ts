@@ -75,20 +75,10 @@ export interface PopulateItem<
 export type ModelKeys<T extends BaseModel> = Exclude<keyof T, number | symbol>
 
 export type OmitRef<T extends BaseModel> = {
-  [K in keyof T]: T[K] extends Ref<infer _X> | undefined
+  [K in keyof T]: [T[K]] extends [Ref<infer _X>] | undefined
     ? ObjectId
     : T[K] extends Ref<infer _X>[] | undefined
     ? ObjectId[]
-    : T[K]
-}
-
-export type Populated<T extends BaseModel> = {
-  [K in keyof T]: T[K] extends ObjectId
-    ? ObjectId
-    : T[K] extends Ref<infer X> | undefined
-    ? X
-    : T[K] extends Ref<infer X>[] | undefined
-    ? X[]
     : T[K]
 }
 
@@ -429,10 +419,6 @@ export const asDoc = <T extends BaseModel>(ref: Ref<T>) => {
   }
 
   return ref
-}
-
-export const asPopulated = <T extends BaseModel>(doc: T) => {
-  return doc as Populated<T>
 }
 
 export const useCollection = <Model extends BaseModel>(
