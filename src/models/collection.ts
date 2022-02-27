@@ -24,7 +24,13 @@ import {
   traversalGet,
   traversalReplace,
 } from '../common/collection'
-import { ArrayOr, isEmpty, isNotEmpty, PromiseOr } from '../common/helper'
+import {
+  ArrayOr,
+  isEmpty,
+  isNotEmpty,
+  isNullOrUndefined,
+  PromiseOr,
+} from '../common/helper'
 import { MongoModel } from '../db/mongo'
 
 export type IndexKeys<Model extends BaseModel> = {
@@ -407,7 +413,13 @@ export const usePopulateItem = <
   item: PopulateItem<Model, RefModel>,
 ) => item
 
-export const asObjectId = <T extends BaseModel>(ref: Ref<T>) => {
+function asObjectId<T extends BaseModel>(ref: Ref<T>): ObjectId
+function asObjectId<T extends BaseModel>(ref?: Ref<T>): ObjectId | undefined
+function asObjectId<T extends BaseModel>(ref?: Ref<T>) {
+  if (isNullOrUndefined(ref)) {
+    return undefined
+  }
+
   if (ref instanceof ObjectId) {
     return ref
   }
@@ -415,7 +427,13 @@ export const asObjectId = <T extends BaseModel>(ref: Ref<T>) => {
   return ref._id
 }
 
-export const asDoc = <T extends BaseModel>(ref: Ref<T>) => {
+function asDoc<T extends BaseModel>(ref: Ref<T>): T
+function asDoc<T extends BaseModel>(ref?: Ref<T>): T | undefined
+function asDoc<T extends BaseModel>(ref?: Ref<T>) {
+  if (isNullOrUndefined(ref)) {
+    return undefined
+  }
+
   if (ref instanceof ObjectId) {
     return { _id: ref } as T
   }
@@ -423,7 +441,17 @@ export const asDoc = <T extends BaseModel>(ref: Ref<T>) => {
   return ref
 }
 
-export const hexToObjectId = (hex: string) => ObjectId.createFromHexString(hex)
+function hexToObjectId(hex: string): ObjectId
+function hexToObjectId(hex?: string): ObjectId | undefined
+function hexToObjectId(hex?: string) {
+  if (isNullOrUndefined(hex)) {
+    return undefined
+  }
+
+  return ObjectId.createFromHexString(hex)
+}
+
+export { asObjectId, asDoc, hexToObjectId }
 
 export const useCollection = <Model extends BaseModel>(
   opts: AtonalCollectionOptions<Model>,
