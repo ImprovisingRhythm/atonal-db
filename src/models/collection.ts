@@ -441,17 +441,7 @@ function asDoc<T extends BaseModel>(ref?: Ref<T>) {
   return ref
 }
 
-function hexToObjectId(hex: string): ObjectId
-function hexToObjectId(hex?: string): ObjectId | undefined
-function hexToObjectId(hex?: string) {
-  if (isNullOrUndefined(hex)) {
-    return undefined
-  }
-
-  return ObjectId.createFromHexString(hex)
-}
-
-export { asObjectId, asDoc, hexToObjectId }
+export { asObjectId, asDoc }
 
 export const useCollection = <Model extends BaseModel>(
   opts: AtonalCollectionOptions<Model>,
