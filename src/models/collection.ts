@@ -423,6 +423,8 @@ export const asDoc = <T extends BaseModel>(ref: Ref<T>) => {
   return ref
 }
 
+export const hexToObjectId = (hex: string) => ObjectId.createFromHexString(hex)
+
 export const useCollection = <Model extends BaseModel>(
   opts: AtonalCollectionOptions<Model>,
 ) => new AtonalCollection(opts)
