@@ -1,23 +1,25 @@
 import { flatMap } from 'lodash'
 import {
   AggregateOptions,
-  Document,
-  InsertOneOptions,
-  ObjectId,
-  OptionalId,
-  SchemaMember,
   BulkWriteOptions,
+  CountDocumentsOptions,
   CreateIndexesOptions,
+  DeleteOptions,
+  Document,
+  EstimatedDocumentCountOptions,
   Filter,
+  FindOneAndDeleteOptions,
+  FindOneAndUpdateOptions,
+  FindOptions,
+  InsertOneOptions,
+  Join,
+  MongoClient,
+  NestedPaths,
+  ObjectId,
+  OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateOptions,
-  FindOneAndUpdateOptions,
-  DeleteOptions,
-  FindOneAndDeleteOptions,
-  CountDocumentsOptions,
-  EstimatedDocumentCountOptions,
-  FindOptions,
-  MongoClient,
+  WithoutId,
 } from 'mongodb'
 import {
   arrayToMap,
@@ -34,9 +36,7 @@ import {
 import { MongoModel } from '../db/mongo'
 
 export type IndexKeys<Model extends BaseModel> = {
-  [key in keyof Partial<Model> | string]: 1 | -1 | '2d' | '2dsphere'
-} & {
-  [key: string]: 1 | -1 | '2d' | '2dsphere'
+  [key in ModelKeys<WithoutId<Model>>]: 1 | -1 | '2d' | '2dsphere'
 }
 
 export type Index<Model extends BaseModel> =
@@ -56,7 +56,7 @@ export interface Timestamps {
 }
 
 export type NewDocument<T extends OmitRef<BaseModel>> = Omit<
-  OptionalId<T>,
+  OptionalUnlessRequiredId<T>,
   keyof Timestamps
 > &
   Partial<Timestamps>
@@ -64,11 +64,6 @@ export type NewDocument<T extends OmitRef<BaseModel>> = Omit<
 export interface ExtraUpdateOptions {
   timestamps?: boolean
 }
-
-export type Projection<T extends BaseModel> = SchemaMember<
-  T,
-  Document | number | boolean
->
 
 export interface PopulateItem<
   Model extends BaseModel,
@@ -80,7 +75,8 @@ export interface PopulateItem<
   pipe?: (docs: RefModel[]) => PromiseOr<void>
 }
 
-export type ModelKeys<T extends BaseModel> = Exclude<keyof T, number | symbol>
+export type ModelKeys<T extends Document> = Exclude<keyof T, number | symbol> &
+  Join<NestedPaths<T>, '.'>
 
 export type OmitRef<T extends BaseModel> = {
   [K in keyof T]: [T[K]] extends [Ref<infer _X>] | undefined
@@ -138,7 +134,10 @@ export class AtonalCollection<
       }
     }
 
-    await this.collection.insertOne(doc as unknown as OptionalId<Model>, opts)
+    await this.collection.insertOne(
+      doc as unknown as OptionalUnlessRequiredId<Model>,
+      opts,
+    )
 
     return doc as unknown as Model
   }
@@ -162,7 +161,7 @@ export class AtonalCollection<
     }
 
     await this.collection.insertMany(
-      docs as unknown as OptionalId<Model>[],
+      docs as unknown as OptionalUnlessRequiredId<Model>[],
       opts,
     )
 
@@ -173,12 +172,12 @@ export class AtonalCollection<
     return this.collection.find(filter as Filter<Model>, opts)
   }
 
-  async findOne(filter: Filter<FlatModel>, opts: FindOptions<FlatModel> = {}) {
+  findOne(filter: Filter<FlatModel>, opts: FindOptions<FlatModel> = {}) {
     return this.collection.findOne(filter as Filter<Model>, opts)
   }
 
-  async findById(_id: ObjectId, opts: FindOptions<FlatModel> = {}) {
-    return this.findOne({ _id }, opts)
+  findById(_id: ObjectId, opts: FindOptions<FlatModel> = {}) {
+    return this.findOne({ _id } as Partial<FlatModel>, opts)
   }
 
   async exists(cond: ArrayOr<ObjectId> | Filter<FlatModel>) {
@@ -204,7 +203,7 @@ export class AtonalCollection<
     }
   }
 
-  async updateOne(
+  updateOne(
     filter: Filter<FlatModel>,
     update: UpdateFilter<Model>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
@@ -220,15 +219,15 @@ export class AtonalCollection<
     )
   }
 
-  async updateById(
+  updateById(
     _id: ObjectId,
     update: UpdateFilter<Model>,
     opts: UpdateOptions & ExtraUpdateOptions = {},
   ) {
-    return this.updateOne({ _id }, update, opts)
+    return this.updateOne({ _id } as Partial<FlatModel>, update, opts)
   }
 
-  async updateMany(
+  updateMany(
     filter: Filter<FlatModel>,
     update: UpdateFilter<Model>,
     { timestamps = true, ...opts }: UpdateOptions & ExtraUpdateOptions = {},
@@ -265,23 +264,23 @@ export class AtonalCollection<
     return value
   }
 
-  async findByIdAndUpdate(
+  findByIdAndUpdate(
     _id: ObjectId,
     update: UpdateFilter<Model>,
     opts: FindOneAndUpdateOptions & ExtraUpdateOptions = {},
   ) {
-    return this.findOneAndUpdate({ _id }, update, opts)
+    return this.findOneAndUpdate({ _id } as Partial<FlatModel>, update, opts)
   }
 
-  async deleteOne(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
+  deleteOne(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
     return this.collection.deleteOne(filter as Filter<Model>, opts)
   }
 
-  async deleteById(_id: ObjectId, opts: DeleteOptions = {}) {
-    return this.deleteOne({ _id }, opts)
+  deleteById(_id: ObjectId, opts: DeleteOptions = {}) {
+    return this.deleteOne({ _id } as Partial<FlatModel>, opts)
   }
 
-  async deleteMany(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
+  deleteMany(filter: Filter<FlatModel>, opts: DeleteOptions = {}) {
     return this.collection.deleteMany(filter as Filter<Model>, opts)
   }
 
@@ -297,18 +296,18 @@ export class AtonalCollection<
     return value
   }
 
-  async findByIdAndDelete(_id: ObjectId, opts: FindOneAndDeleteOptions = {}) {
-    return this.findOneAndDelete({ _id }, opts)
+  findByIdAndDelete(_id: ObjectId, opts: FindOneAndDeleteOptions = {}) {
+    return this.findOneAndDelete({ _id } as Partial<FlatModel>, opts)
   }
 
-  async countDocuments(
+  countDocuments(
     filter: Filter<FlatModel> = {},
     opts: CountDocumentsOptions = {},
   ) {
     return this.collection.countDocuments(filter as Filter<Model>, opts)
   }
 
-  async estimatedDocumentCount(opts: EstimatedDocumentCountOptions = {}) {
+  estimatedDocumentCount(opts: EstimatedDocumentCountOptions = {}) {
     return this.collection.estimatedDocumentCount(opts)
   }
 
@@ -342,7 +341,7 @@ export class AtonalCollection<
 
     // If "select" is not empty, transform it into a projection
     if (isNotEmpty(select)) {
-      const projection: Projection<any> = {}
+      const projection: Document = {}
 
       for (const item of select) {
         projection[item] = 1

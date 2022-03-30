@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis'
+import Redis from 'ioredis'
 import { mapValues } from 'lodash'
 import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 

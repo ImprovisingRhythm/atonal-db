@@ -1,4 +1,4 @@
-import IORedis, { Redis, RedisOptions } from 'ioredis'
+import Redis, { RedisOptions } from 'ioredis'
 import ms from 'ms'
 import { InitableModel } from './model'
 
@@ -91,7 +91,7 @@ export interface RedisConfig extends RedisOptions {}
 
 export const useRedis = (config: RedisConfig) => {
   return new Promise<Redis>(resolve => {
-    const client = new IORedis(config)
+    const client = new Redis(config)
 
     client.once('ready', () => resolve(client))
   })

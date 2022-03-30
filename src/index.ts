@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis'
+import Redis from 'ioredis'
 import { MongoClient } from 'mongodb'
 import { DBModel } from './db/model'
 import { MongoConfig, MongoModel, useMongo } from './db/mongo'

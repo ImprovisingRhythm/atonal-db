@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis'
+import Redis from 'ioredis'
 import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
 export interface AtonalListOptions<T extends RedisValueType> {
