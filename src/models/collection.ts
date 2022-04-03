@@ -11,11 +11,13 @@ import {
   FindOneAndDeleteOptions,
   FindOneAndUpdateOptions,
   FindOptions,
+  IndexSpecification,
   InsertOneOptions,
   Join,
   MongoClient,
   NestedPaths,
   ObjectId,
+  OptionalId,
   OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateOptions,
@@ -36,7 +38,7 @@ import {
 import { MongoModel } from '../db/mongo'
 
 export type IndexKeys<Model extends BaseModel> = {
-  [key in ModelKeys<WithoutId<Model>>]: 1 | -1 | '2d' | '2dsphere'
+  [key in ModelKeys<WithoutId<Model>>]?: 1 | -1 | '2d' | '2dsphere'
 }
 
 export type Index<Model extends BaseModel> =
@@ -56,7 +58,7 @@ export interface Timestamps {
 }
 
 export type NewDocument<T extends OmitRef<BaseModel>> = Omit<
-  OptionalUnlessRequiredId<T>,
+  OptionalId<T>,
   keyof Timestamps
 > &
   Partial<Timestamps>
@@ -75,8 +77,7 @@ export interface PopulateItem<
   pipe?: (docs: RefModel[]) => PromiseOr<void>
 }
 
-export type ModelKeys<T extends Document> = Exclude<keyof T, number | symbol> &
-  Join<NestedPaths<T>, '.'>
+export type ModelKeys<T extends Document> = Join<NestedPaths<T>, '.'>
 
 export type OmitRef<T extends BaseModel> = {
   [K in keyof T]: [T[K]] extends [Ref<infer _X>] | undefined
@@ -377,9 +378,12 @@ export class AtonalCollection<
       if (Array.isArray(index)) {
         const [indexSpec, options = {}] = index
 
-        await this.collection.createIndex(indexSpec, options)
+        await this.collection.createIndex(
+          indexSpec as IndexSpecification,
+          options,
+        )
       } else {
-        await this.collection.createIndex(index)
+        await this.collection.createIndex(index as IndexSpecification)
       }
     }
   }
