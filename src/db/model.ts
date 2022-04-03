@@ -2,22 +2,22 @@ import { MongoModel } from './mongo'
 import { RedisModel, RedisValueType } from './redis'
 
 export class InitableModel<T> {
-  private client?: T
+  private _client?: T
 
   protected async _init(client: T) {
-    if (this.client) {
+    if (this._client) {
       throw new Error('already initialized')
     }
 
-    this.client = client
+    this._client = client
   }
 
-  protected getClient() {
-    if (!this.client) {
+  protected get client() {
+    if (!this._client) {
       throw new Error('need initialize first')
     }
 
-    return this.client
+    return this._client
   }
 }
 

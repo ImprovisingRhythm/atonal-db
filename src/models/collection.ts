@@ -385,7 +385,7 @@ export class AtonalCollection<
   }
 
   get collection() {
-    return this.getClient().db().collection<Model>(this.opts.name)
+    return this.client.db().collection<Model>(this.opts.name)
   }
 
   private updateTimestamps(update: UpdateFilter<Model>) {

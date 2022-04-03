@@ -1,22 +1,21 @@
 import Redis, { RedisOptions } from 'ioredis'
-import ms from 'ms'
 import { InitableModel } from './model'
 
-export const getRedisTime = (time: string | number) => {
-  if (typeof time === 'string') {
-    return Math.floor(ms(time) / 1000)
-  }
+export type RedisValueType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'array'
+  | 'record'
 
-  return time
-}
-
-export type RedisValueType = 'string' | 'number' | 'boolean' | 'record'
 export type RedisValueNativeType<T extends RedisValueType> = T extends 'string'
   ? string
   : T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
+  : T extends 'array'
+  ? Array<any>
   : Record<string, any>
 
 export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
@@ -58,10 +57,10 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
     }
 
     if (this.type === 'boolean') {
-      return (value === '1' ? true : false) as RedisValueNativeType<T>
+      return (value === '1') as RedisValueNativeType<T>
     }
 
-    if (this.type === 'record') {
+    if (this.type === 'array' || this.type === 'record') {
       return JSON.parse(value) as RedisValueNativeType<T>
     }
 
@@ -74,12 +73,10 @@ export class RedisModel<T extends RedisValueType> extends InitableModel<Redis> {
     }
 
     if (this.type === 'boolean') {
-      return values.map(value =>
-        value === '1' ? true : false,
-      ) as RedisValueNativeType<T>[]
+      return values.map(value => value === '1') as RedisValueNativeType<T>[]
     }
 
-    if (this.type === 'record') {
+    if (this.type === 'array' || this.type === 'record') {
       return values.map(value => JSON.parse(value)) as RedisValueNativeType<T>[]
     }
 

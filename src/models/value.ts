@@ -1,10 +1,6 @@
 import Redis from 'ioredis'
-import {
-  RedisValueNativeType,
-  RedisModel,
-  RedisValueType,
-  getRedisTime,
-} from '../db/redis'
+import { getRedisTime } from '../common/time'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
 export interface AtonalValueOptions<T extends RedisValueType> {
   name: string
@@ -30,22 +26,20 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async set(value: RedisValueNativeType<T>, expiresIn?: string | number) {
-    const client = this.getClient()
-
     if (expiresIn) {
-      return client.set(
+      return this.client.set(
         this.key,
         this.stringify(value),
         'EX',
         getRedisTime(expiresIn),
       )
     } else {
-      return client.set(this.key, this.stringify(value))
+      return this.client.set(this.key, this.stringify(value))
     }
   }
 
   async get<CustomType = RedisValueNativeType<T>>() {
-    const value = await this.getClient().get(this.key)
+    const value = await this.client.get(this.key)
 
     if (value === null) {
       return null
@@ -55,15 +49,15 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async delete() {
-    return this.getClient().del(this.key)
+    return this.client.del(this.key)
   }
 
   async expire(expiresIn: string | number) {
-    return this.getClient().expire(this.key, getRedisTime(expiresIn))
+    return this.client.expire(this.key, getRedisTime(expiresIn))
   }
 
   async ttl() {
-    return this.getClient().ttl(this.key)
+    return this.client.ttl(this.key)
   }
 }
 

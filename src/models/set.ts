@@ -25,34 +25,31 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async add(...values: RedisValueNativeType<T>[]) {
-    return this.getClient().sadd(this.key, ...this.stringifyMany(values))
+    return this.client.sadd(this.key, ...this.stringifyMany(values))
   }
 
   async remove(value: RedisValueNativeType<T>) {
-    return this.getClient().srem(this.key, this.stringify(value))
+    return this.client.srem(this.key, this.stringify(value))
   }
 
   async has(value: RedisValueNativeType<T>) {
-    const res = await this.getClient().sismember(
-      this.key,
-      this.stringify(value),
-    )
+    const res = await this.client.sismember(this.key, this.stringify(value))
 
-    return !!res
+    return Boolean(res)
   }
 
   async values<R = RedisValueNativeType<T>>() {
-    const values = await this.getClient().smembers(this.key)
+    const values = await this.client.smembers(this.key)
 
     return this.parseMany(values) as R[]
   }
 
   async size() {
-    return this.getClient().scard(this.key)
+    return this.client.scard(this.key)
   }
 
   async intersection<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
-    const values: string[] = await this.getClient().sinter(
+    const values: string[] = await this.client.sinter(
       this.key,
       ...items.map(item => item.key),
     )
@@ -61,7 +58,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async difference<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
-    const values: string[] = await this.getClient().sdiff(
+    const values: string[] = await this.client.sdiff(
       this.key,
       ...items.map(item => item.key),
     )
@@ -70,7 +67,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async union<R = RedisValueNativeType<T>>(...items: AtonalSet<T>[]) {
-    const values: string[] = await this.getClient().sunion(
+    const values: string[] = await this.client.sunion(
       this.key,
       ...items.map(item => item.key),
     )
@@ -79,7 +76,7 @@ export class AtonalSet<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async clear() {
-    return this.getClient().del(this.key)
+    return this.client.del(this.key)
   }
 }
 

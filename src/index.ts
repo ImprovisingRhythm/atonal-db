@@ -6,6 +6,7 @@ import { RedisConfig, RedisModel, useRedis } from './db/redis'
 
 export * from './common/collection'
 export * from './common/regex-search'
+export * from './common/time'
 export * from './db/model'
 export * from './db/mongo'
 export * from './db/redis'
@@ -19,7 +20,7 @@ export * from './models/value'
 
 export interface AtonalDBConfig {
   databases: {
-    mongodb?: MongoConfig
+    mongo?: MongoConfig
     redis?: RedisConfig
   }
   models?: DBModel[]
@@ -29,8 +30,8 @@ export const useDB = async ({ databases, models = [] }: AtonalDBConfig) => {
   let mongoClient: MongoClient | undefined
   let redisClient: Redis | undefined
 
-  if (databases.mongodb) {
-    mongoClient = await useMongo(databases.mongodb)
+  if (databases.mongo) {
+    mongoClient = await useMongo(databases.mongo)
   }
 
   if (databases.redis) {

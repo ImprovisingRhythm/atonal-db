@@ -1,10 +1,6 @@
 import Redis from 'ioredis'
-import {
-  RedisValueNativeType,
-  RedisModel,
-  RedisValueType,
-  getRedisTime,
-} from '../db/redis'
+import { getRedisTime } from '../common/time'
+import { RedisValueNativeType, RedisModel, RedisValueType } from '../db/redis'
 
 export interface AtonalKVOptions<T extends RedisValueType> {
   name: string
@@ -34,17 +30,15 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
     value: RedisValueNativeType<T>,
     expiresIn?: string | number,
   ) {
-    const client = this.getClient()
-
     if (expiresIn) {
-      return client.set(
+      return this.client.set(
         `${this.key}:${key}`,
         this.stringify(value),
         'EX',
         getRedisTime(expiresIn),
       )
     } else {
-      return client.set(`${this.key}:${key}`, this.stringify(value))
+      return this.client.set(`${this.key}:${key}`, this.stringify(value))
     }
   }
 
@@ -60,7 +54,7 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async get<R = RedisValueNativeType<T>>(key: string) {
-    const value = await this.getClient().get(`${this.key}:${key}`)
+    const value = await this.client.get(`${this.key}:${key}`)
 
     if (value === null) {
       return null
@@ -70,23 +64,21 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async remove(key: string) {
-    await this.getClient().del(`${this.key}:${key}`)
+    return this.client.del(`${this.key}:${key}`)
   }
 
   async has(key: string) {
-    const res = await this.getClient().exists(`${this.key}:${key}`)
-    return !!res
+    const res = await this.client.exists(`${this.key}:${key}`)
+
+    return Boolean(res)
   }
 
   async expire(key: string, expiresIn: string | number) {
-    return this.getClient().expire(
-      `${this.key}:${key}`,
-      getRedisTime(expiresIn),
-    )
+    return this.client.expire(`${this.key}:${key}`, getRedisTime(expiresIn))
   }
 
   async ttl(key: string) {
-    return this.getClient().ttl(`${this.key}:${key}`)
+    return this.client.ttl(`${this.key}:${key}`)
   }
 }
 

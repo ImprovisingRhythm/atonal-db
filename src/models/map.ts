@@ -26,18 +26,18 @@ export class AtonalMap<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async set(key: string, value: RedisValueNativeType<T>) {
-    return this.getClient().hset(this.key, key, this.stringify(value))
+    return this.client.hset(this.key, key, this.stringify(value))
   }
 
   async assign(data: Record<string, RedisValueNativeType<T>>) {
-    return this.getClient().hset(
+    return this.client.hset(
       this.key,
       mapValues(data, value => this.stringify(value)),
     )
   }
 
   async get<R = RedisValueNativeType<T>>(key: string) {
-    const value = await this.getClient().hget(this.key, key)
+    const value = await this.client.hget(this.key, key)
 
     if (value === null) {
       return null
@@ -47,26 +47,27 @@ export class AtonalMap<T extends RedisValueType> extends RedisModel<T> {
   }
 
   async getAll<R = RedisValueNativeType<T>>() {
-    const data = await this.getClient().hgetall(this.key)
+    const data = await this.client.hgetall(this.key)
 
     return mapValues(data, value => this.parse(value)) as Record<string, R>
   }
 
   async remove(key: string) {
-    return this.getClient().hdel(this.key, key)
+    return this.client.hdel(this.key, key)
   }
 
   async has(key: string) {
-    const res = await this.getClient().hexists(this.key, key)
-    return !!res
+    const res = await this.client.hexists(this.key, key)
+
+    return Boolean(res)
   }
 
   async size() {
-    return this.getClient().hlen(this.key)
+    return this.client.hlen(this.key)
   }
 
   async clear() {
-    return this.getClient().del(this.key)
+    return this.client.del(this.key)
   }
 }
 
