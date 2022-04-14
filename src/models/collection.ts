@@ -371,20 +371,24 @@ export class AtonalCollection<
     return docs
   }
 
+  async createIndex(index: Index<Model>) {
+    if (Array.isArray(index)) {
+      const [indexSpec, options = {}] = index
+
+      await this.collection.createIndex(
+        indexSpec as IndexSpecification,
+        options,
+      )
+    } else {
+      await this.collection.createIndex(index as IndexSpecification)
+    }
+  }
+
   async syncIndexes() {
     if (!this.opts.indexes) return
 
     for (const index of this.opts.indexes) {
-      if (Array.isArray(index)) {
-        const [indexSpec, options = {}] = index
-
-        await this.collection.createIndex(
-          indexSpec as IndexSpecification,
-          options,
-        )
-      } else {
-        await this.collection.createIndex(index as IndexSpecification)
-      }
+      await this.createIndex(index)
     }
   }
 

@@ -65,7 +65,7 @@ brace-expansion@^1.1.7:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
 
-bson@^4.6.1:
+bson@^4.6.2:
   version "4.6.2"
   resolved "https://registry.npmjs.org/bson/-/bson-4.6.2.tgz#3241c79d23d225b86ab6d2bc268b803d8a5fd444"
   integrity sha512-VeJKHShcu1b/ugl0QiujlVuBepab714X9nNyBdA1kfekuDGecxgpTA2Z6nYbagrWFeiIyzSWIOzju3lhj+RNyQ==
@@ -137,10 +137,10 @@ inherits@2:
   resolved "https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
 
-ioredis@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npmjs.org/ioredis/-/ioredis-5.0.2.tgz#76bb83ef9757134d62270b9f45251518c55dfdb7"
-  integrity sha512-B8yZmqripQXllUUoeX8PhlzcsPiEGZToyD5f2gRzuMYHGOmX0RXh3TNdLIj+wcOs1+tk+W49D8qU9hkVohRFDw==
+ioredis@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.npmjs.org/ioredis/-/ioredis-5.0.4.tgz#0d4abfd818adfc5ef5029fddac4b8f503a1433b7"
+  integrity sha512-qFJw3MnPNsJF1lcIOP3vztbsasOXK3nDdNAgjQj7t7/Bn/w10PGchTOpqylQNxjzPbLoYDu34LjeJtSWiKBntQ==
   dependencies:
     "@ioredis/commands" "^1.1.1"
     cluster-key-slot "^1.1.0"
@@ -192,12 +192,12 @@ mongodb-connection-string-url@^2.5.2:
     "@types/whatwg-url" "^8.2.1"
     whatwg-url "^11.0.0"
 
-mongodb@^4.4.1:
-  version "4.4.1"
-  resolved "https://registry.npmjs.org/mongodb/-/mongodb-4.4.1.tgz#e604cfbe2d5e125ae156ad04b52d261bed480b99"
-  integrity sha512-IAD3nFtCR4s22vi5qjqkCBnuyDDrOW8WVSSmgHquOvGaP1iTD+XpC5tr8wAUbZ2EeZkaswwBKQFHDvl4qYcKqQ==
+mongodb@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.npmjs.org/mongodb/-/mongodb-4.5.0.tgz#d74c2008567b606dccef220f62a44cd7b934eb92"
+  integrity sha512-A2l8MjEpKojnhbCM0MK3+UOGUSGvTNNSv7AkP1fsT7tkambrkkqN/5F2y+PhzsV0Nbv58u04TETpkaSEdI2zKA==
   dependencies:
-    bson "^4.6.1"
+    bson "^4.6.2"
     denque "^2.0.1"
     mongodb-connection-string-url "^2.5.2"
     socks "^2.6.2"
