@@ -13,7 +13,6 @@ import {
   FindOptions,
   IndexSpecification,
   InsertOneOptions,
-  Join,
   MongoClient,
   NestedPaths,
   ObjectId,
@@ -76,6 +75,16 @@ export interface PopulateItem<
   select?: ModelKeys<RefModel>[]
   pipe?: (docs: RefModel[]) => PromiseOr<void>
 }
+
+export type Join<T extends unknown[], D extends string> = T extends []
+  ? ''
+  : T extends [string | number]
+  ? `${T[0]}`
+  : T extends [string, ...infer R]
+  ? `${T[0]}${D}${Join<R, D>}`
+  : T extends [number, ...infer R]
+  ? `${T[0]}${D}${Join<R, D>}` | Join<R, D>
+  : string
 
 export type ModelKeys<T extends Document> = Join<NestedPaths<T>, '.'>
 
