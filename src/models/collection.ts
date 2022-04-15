@@ -83,7 +83,7 @@ export type Join<T extends unknown[], D extends string> = T extends []
   : T extends [string, ...infer R]
   ? `${T[0]}${D}${Join<R, D>}`
   : T extends [number, ...infer R]
-  ? `${T[0]}${D}${Join<R, D>}` | Join<R, D>
+  ? `${T[0] | '$'}${D}${Join<R, D>}` | Join<R, D>
   : string
 
 export type ModelKeys<T extends Document> = Join<NestedPaths<T>, '.'>
