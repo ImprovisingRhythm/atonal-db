@@ -76,17 +76,17 @@ export interface PopulateItem<
   pipe?: (docs: RefModel[]) => PromiseOr<void>
 }
 
-export type Join<T extends unknown[], D extends string> = T extends []
+type IndexJoin<T extends unknown[]> = T extends []
   ? ''
   : T extends [string | number]
   ? `${T[0]}`
   : T extends [string, ...infer R]
-  ? `${T[0]}${D}${Join<R, D>}`
+  ? `${T[0]}.${IndexJoin<R>}`
   : T extends [number, ...infer R]
-  ? `${T[0] | '$'}${D}${Join<R, D>}` | Join<R, D>
+  ? IndexJoin<R>
   : string
 
-export type ModelKeys<T extends Document> = Join<NestedPaths<T>, '.'>
+export type ModelKeys<T> = Partial<T> & IndexJoin<NestedPaths<T>>
 
 export type OmitRef<T extends BaseModel> = {
   [K in keyof T]: [T[K]] extends [Ref<infer _X>] | undefined
