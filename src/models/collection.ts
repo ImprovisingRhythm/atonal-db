@@ -86,7 +86,9 @@ type IndexJoin<T extends unknown[]> = T extends []
   ? IndexJoin<R>
   : string
 
-export type ModelKeys<T> = Partial<T> & IndexJoin<NestedPaths<T>>
+export type ModelKeys<T> =
+  | Exclude<keyof T, number | symbol>
+  | IndexJoin<NestedPaths<T>>
 
 export type OmitRef<T extends BaseModel> = {
   [K in keyof T]: [T[K]] extends [Ref<infer _X>] | undefined
