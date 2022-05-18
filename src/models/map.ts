@@ -69,6 +69,22 @@ export class AtonalMap<T extends RedisValueType> extends RedisModel<T> {
   async clear() {
     return this.client.del(this.key)
   }
+
+  async incrby(key: string, amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrby only supports number type')
+    }
+
+    return this.client.hincrby(this.key, key, amount)
+  }
+
+  async incrbyfloat(key: string, amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrbyfloat only supports number type')
+    }
+
+    return this.client.hincrbyfloat(this.key, key, amount)
+  }
 }
 
 export const useMap = <T extends RedisValueType>(opts: AtonalMapOptions<T>) =>

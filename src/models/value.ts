@@ -59,6 +59,30 @@ export class AtonalValue<T extends RedisValueType> extends RedisModel<T> {
   async ttl() {
     return this.client.ttl(this.key)
   }
+
+  async incr() {
+    if (this.opts.type !== 'number') {
+      throw new Error('incr only supports number type')
+    }
+
+    return this.client.incr(this.key)
+  }
+
+  async incrby(amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrby only supports number type')
+    }
+
+    return this.client.incrby(this.key, amount)
+  }
+
+  async incrbyfloat(amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrbyfloat only supports number type')
+    }
+
+    return this.client.incrbyfloat(this.key, amount)
+  }
 }
 
 export const useValue = <T extends RedisValueType>(

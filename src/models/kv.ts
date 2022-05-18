@@ -80,6 +80,30 @@ export class AtonalKV<T extends RedisValueType> extends RedisModel<T> {
   async ttl(key: string) {
     return this.client.ttl(`${this.key}:${key}`)
   }
+
+  async incr(key: string) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incr only supports number type')
+    }
+
+    return this.client.incr(`${this.key}:${key}`)
+  }
+
+  async incrby(key: string, amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrby only supports number type')
+    }
+
+    return this.client.incrby(`${this.key}:${key}`, amount)
+  }
+
+  async incrbyfloat(key: string, amount: number) {
+    if (this.opts.type !== 'number') {
+      throw new Error('incrbyfloat only supports number type')
+    }
+
+    return this.client.incrbyfloat(`${this.key}:${key}`, amount)
+  }
 }
 
 export const useKV = <T extends RedisValueType>(opts: AtonalKVOptions<T>) =>
